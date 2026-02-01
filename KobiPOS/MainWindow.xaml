@@ -5,155 +5,260 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="KobiPOS - Cafe &amp; Restoran Yönetim Sistemi" 
-        Height="700" Width="1200"
+        Height="768" Width="1366"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <!-- Sol menü - Genişlik dinamik (0 = kapalı, 250 = açık) -->
+            <ColumnDefinition Width="{Binding SidebarWidth}"/>
+            <!-- Ana içerik - Geriye kalan alan -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="20,15">
+        <!-- Overlay - Menü açıkken arka plan karartma -->
+        <Border Grid.Column="1" 
+                Background="#80000000"
+                Visibility="{Binding OverlayVisibility}"
+                Panel.ZIndex="100">
+            <Border.InputBindings>
+                <MouseBinding Gesture="LeftClick" Command="{Binding CloseSidebarCommand}"/>
+            </Border.InputBindings>
+        </Border>
+
+        <!-- SOL MENÜ PANELİ -->
+        <Border Grid.Column="0" 
+                Background="#2196F3"
+                Panel.ZIndex="200">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock x:Name="TitleTextBlock" 
-                               Text="KobiPOS - Cafe &amp; Restoran Yönetim Sistemi" 
-                               FontSize="20" 
-                               FontWeight="Bold" 
-                               Foreground="White"/>
-                    <TextBlock x:Name="UserInfoTextBlock" 
-                               Text="Kullanıcı: Admin" 
-                               FontSize="12" 
-                               Foreground="White" 
-                               Opacity="0.9"/>
-                </StackPanel>
+                <!-- ÜST BÖLÜM: Hamburger + Logo -->
+                <Grid Grid.Row="0" Background="#1976D2" Height="60">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="1" 
-                        Content="Çıkış Yap" 
-                        Style="{StaticResource DangerButton}"
-                        Click="LogoutButton_Click"
-                        Padding="15,8"/>
+                    <!-- Hamburger Butonu -->
+                    <Button Grid.Column="0"
+                            Content="☰"
+                            Command="{Binding ToggleSidebarCommand}"
+                            Style="{StaticResource HamburgerButton}"
+                            FontSize="28"
+                            Foreground="White"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Width="60"
+                            Height="60"
+                            Cursor="Hand">
+                        <Button.ToolTip>
+                            <ToolTip Content="Menüyü Kapat"/>
+                        </Button.ToolTip>
+                    </Button>
+
+                    <!-- Logo Text -->
+                    <StackPanel Grid.Column="1" 
+                                VerticalAlignment="Center"
+                                Margin="10,0,0,0">
+                        <TextBlock Text="KobiPOS"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <TextBlock Text="Cafe &amp; Restoran"
+                                   FontSize="11"
+                                   Foreground="#BBDEFB"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- MENÜ BUTONLARI -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="0,10,0,10">
+
+                        <!-- Ana Sayfa -->
+                        <Button Content="🏠  Ana Sayfa"
+                                Click="HomeButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- Masalar -->
+                        <Button Content="🪑  Masalar"
+                                Click="TablesButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- ÜRÜNLER KALDIRILDI! -->
+
+                        <!-- Yönetim Bölümü Başlık -->
+                        <Border Height="1" Background="#64B5F6" Margin="10,20,10,10"/>
+                        <TextBlock Text="YÖNETIM ALANI" 
+                                   Foreground="#E3F2FD" 
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Margin="20,0,0,10"/>
+
+                        <!-- Ürün Yönetimi -->
+                        <Button Content="📋  Ürün Yönetimi"
+                                Click="ProductManagementButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- Masa Yönetimi -->
+                        <Button Content="🪑  Masa Yönetimi"
+                                Click="TableManagementButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- Bölge Yönetimi -->
+                        <Button Content="🏢  Bölge Yönetimi"
+                                Click="ZoneManagementButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- Diğer Bölüm -->
+                        <Border Height="1" Background="#64B5F6" Margin="10,20,10,10"/>
+
+                        <!-- Raporlar -->
+                        <Button Content="📊  Raporlar"
+                                Click="ReportsButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- Lisans -->
+                        <Button Content="🔑  Lisans"
+                                Click="LicenseButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
+                        <!-- Destek -->
+                        <Button Content="📞  Destek"
+                                Click="SupportButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ALT BÖLÜM: Kullanıcı + Çıkış -->
+                <Border Grid.Row="2" 
+                        Background="#1565C0" 
+                        Height="60">
+                    <Grid Margin="15,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Kullanıcı Bilgisi -->
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Name="UserInfoTextBlock"
+                                       Text="{Binding CurrentUser.FullName}"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding CurrentUser.Role}"
+                                       Foreground="#BBDEFB"
+                                       FontSize="11"
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <!-- Çıkış Butonu -->
+                        <Button Grid.Column="1"
+                                Content="🚪"
+                                Click="LogoutButton_Click"
+                                Style="{StaticResource LogoutButton}"
+                                Width="40"
+                                Height="40"
+                                FontSize="20"
+                                Background="#0D47A1"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand">
+                            <Button.ToolTip>
+                                <ToolTip Content="Çıkış Yap"/>
+                            </Button.ToolTip>
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
         </Border>
 
-        <!-- Main Content -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- HAMBURGER BUTONU (Menü Kapalıyken) -->
+        <Button Grid.Column="1"
+                Content="☰"
+                Command="{Binding ToggleSidebarCommand}"
+                Visibility="{Binding FloatingHamburgerVisibility}"
+                Style="{StaticResource FloatingHamburgerButton}"
+                FontSize="28"
+                Width="50"
+                Height="50"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                Margin="20,20,0,0"
+                Panel.ZIndex="50"
+                Background="#2196F3"
+                Foreground="White"
+                BorderThickness="0"
+                Cursor="Hand">
+            <Button.Effect>
+                <DropShadowEffect BlurRadius="10" 
+                                  ShadowDepth="3" 
+                                  Opacity="0.3"/>
+            </Button.Effect>
+            <Button.ToolTip>
+                <ToolTip Content="Menüyü Aç"/>
+            </Button.ToolTip>
+        </Button>
 
-            <!-- Sidebar Menu -->
-            <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" 
-                    BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
-                <StackPanel Margin="0,20,0,0">
-                    <Button Content="🏠 Ana Sayfa" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="HomeButton_Click"/>
-                    
-                    <Button Content="🍽️ Masalar" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="TablesButton_Click"/>
-                    
-                    <Button Content="📋 Ürünler" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="ProductsButton_Click"/>
-                    
-                    <!-- Management Section Separator -->
-                    <Border Height="1" Background="#E0E0E0" Margin="10,15"/>
-                    <TextBlock Text="YÖNETIM ALANI" 
-                               FontSize="11" 
-                               FontWeight="Bold" 
-                               Foreground="#999999"
-                               Margin="20,5,10,5"/>
-                    
-                    <Button Content="📊 Ürün Yönetimi" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="ProductManagementButton_Click"/>
-                    
-                    <Button Content="🏢 Masa Yönetimi" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="TableManagementButton_Click"/>
-                    
-                    <Button Content="📍 Bölge Yönetimi" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="ZoneManagementButton_Click"/>
-                    
-                    <Border Height="1" Background="#E0E0E0" Margin="10,15"/>
-                    
-                    <Button Content="📊 Raporlar" 
-                            Style="{StaticResource PrimaryButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="ReportsButton_Click"/>
-                    
-                    <Button Content="🔑 Lisans" 
-                            Style="{StaticResource WarningButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="LicenseButton_Click"/>
-                    
-                    <Button Content="📞 Destek" 
-                            Style="{StaticResource SuccessButton}"
-                            Height="50" 
-                            Margin="10,5"
-                            HorizontalContentAlignment="Left"
-                            Padding="20,10"
-                            Click="SupportButton_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Content Area -->
-            <Border Grid.Column="1" Background="{StaticResource BackgroundBrush}" Padding="20">
-                <ContentControl x:Name="ContentArea"/>
-            </Border>
-        </Grid>
-
-        <!-- Footer -->
-        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" 
-                BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" 
-                Padding="20,10">
+        <!-- ANA İÇERİK ALANI -->
+        <Border Grid.Column="1" Background="#ECEFF1" Padding="10">
             <Grid>
-                <TextBlock Text="© 2024 Kobi Bilişim | 0552 165 04 35 | www.kobibilisim.com" 
-                           HorizontalAlignment="Center"
-                           FontSize="11"
-                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="20,15" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock x:Name="TitleTextBlock" 
+                                       Text="{Binding Title}" 
+                                       FontSize="20" 
+                                       FontWeight="Bold" 
+                                       Foreground="White"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area -->
+                <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}">
+                    <ContentControl x:Name="ContentArea"/>
+                </Border>
+
+                <!-- Footer -->
+                <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" 
+                        BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" 
+                        Padding="20,10"
+                        Margin="0,10,0,0">
+                    <Grid>
+                        <TextBlock Text="© 2024 Kobi Bilişim | 0552 165 04 35 | www.kobibilisim.com" 
+                                   HorizontalAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Grid>
+                </Border>
             </Grid>
         </Border>
     </Grid>

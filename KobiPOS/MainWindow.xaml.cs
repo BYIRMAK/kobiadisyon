@@ -30,46 +30,49 @@ public partial class MainWindow : Window
     private void HomeButton_Click(object sender, RoutedEventArgs e)
     {
         ShowHome();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void TablesButton_Click(object sender, RoutedEventArgs e)
     {
         ShowTables();
-    }
-
-    private void ProductsButton_Click(object sender, RoutedEventArgs e)
-    {
-        ShowProducts();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void ReportsButton_Click(object sender, RoutedEventArgs e)
     {
         ShowReports();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void LicenseButton_Click(object sender, RoutedEventArgs e)
     {
         ShowLicense();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void SupportButton_Click(object sender, RoutedEventArgs e)
     {
         ShowSupport();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void ProductManagementButton_Click(object sender, RoutedEventArgs e)
     {
         ShowProductManagement();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void TableManagementButton_Click(object sender, RoutedEventArgs e)
     {
         ShowTableManagement();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void ZoneManagementButton_Click(object sender, RoutedEventArgs e)
     {
         ShowZoneManagement();
+        _viewModel.CloseSidebarCommand.Execute(null);
     }
 
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
