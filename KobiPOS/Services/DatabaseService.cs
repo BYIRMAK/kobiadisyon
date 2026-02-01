@@ -796,7 +796,7 @@ namespace KobiPOS.Services
             using var connection = GetConnection();
             connection.Open();
 
-            var command = new SqliteCommand("SELECT * FROM Zones WHERE IsActive = 1 ORDER BY ZoneName", connection);
+            var command = new SqliteCommand("SELECT * FROM Zones ORDER BY ZoneName", connection);
             using var reader = command.ExecuteReader();
 
             while (reader.Read())
@@ -857,6 +857,16 @@ namespace KobiPOS.Services
         {
             using var connection = GetConnection();
             connection.Open();
+
+            // Check if any tables reference this zone
+            var checkCommand = new SqliteCommand("SELECT COUNT(*) FROM Tables WHERE ZoneID = @id", connection);
+            checkCommand.Parameters.AddWithValue("@id", zoneId);
+            var count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+            if (count > 0)
+            {
+                throw new InvalidOperationException($"Bu bölge {count} masa tarafından kullanılmaktadır. Önce masaları başka bir bölgeye taşıyın veya silin.");
+            }
 
             var command = new SqliteCommand("DELETE FROM Zones WHERE ID = @id", connection);
             command.Parameters.AddWithValue("@id", zoneId);

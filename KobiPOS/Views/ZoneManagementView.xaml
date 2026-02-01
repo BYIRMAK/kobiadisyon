@@ -211,9 +211,6 @@
                             <Style TargetType="TextBlock">
                                 <Setter Property="Text" Value="Bölge Ekle"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding EditingZone.ID}" Value="0">
-                                        <Setter Property="Text" Value="Bölge Ekle"/>
-                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding EditingZone.ID, Converter={StaticResource IsGreaterThanZeroConverter}}" Value="True">
                                         <Setter Property="Text" Value="Bölge Düzenle"/>
                                     </DataTrigger>
