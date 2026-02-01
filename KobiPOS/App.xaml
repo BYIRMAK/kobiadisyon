@@ -8,6 +8,7 @@
         <helpers:EqualityConverter x:Key="EqualityConverter"/>
         <helpers:IsGreaterThanZeroConverter x:Key="IsGreaterThanZeroConverter"/>
         <helpers:PathToImageSourceConverter x:Key="PathToImageSourceConverter"/>
+        <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         
         <!-- Colors -->

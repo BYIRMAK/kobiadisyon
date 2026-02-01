@@ -100,24 +100,86 @@
                                 <DataTemplate>
                                     <Button Command="{Binding DataContext.AddProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
-                                            Width="120" Height="100"
-                                            Margin="5"
-                                            Style="{StaticResource SuccessButton}"
+                                            Width="120"
+                                            Height="160"
+                                            Margin="8"
+                                            Background="#4CAF50"
+                                            BorderThickness="0"
                                             Cursor="Hand">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding ProductName}" 
-                                                       FontSize="14" 
-                                                       FontWeight="Bold"
-                                                       Foreground="White"
-                                                       TextWrapping="Wrap"
-                                                       TextAlignment="Center"
-                                                       Margin="0,0,0,5"/>
-                                            <TextBlock Text="{Binding Price, StringFormat='{}{0:N2} ₺'}" 
-                                                       FontSize="16"
-                                                       FontWeight="Bold"
-                                                       Foreground="White"
-                                                       TextAlignment="Center"/>
-                                        </StackPanel>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="{TemplateBinding Background}" 
+                                                                   CornerRadius="10"
+                                                                   BorderBrush="#388E3C"
+                                                                   BorderThickness="2">
+                                                                <Grid>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="90"/>
+                                                                        <RowDefinition Height="*"/>
+                                                                    </Grid.RowDefinitions>
+                                                                    
+                                                                    <!-- PRODUCT IMAGE -->
+                                                                    <Border Grid.Row="0" 
+                                                                           Background="White" 
+                                                                           CornerRadius="8,8,0,0"
+                                                                           Margin="5,5,5,0">
+                                                                        <Grid>
+                                                                            <!-- Show image if exists -->
+                                                                            <Image Source="{Binding ImagePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                                                                   Stretch="UniformToFill"
+                                                                                   VerticalAlignment="Center"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   Margin="2"/>
+                                                                            
+                                                                            <!-- Show placeholder emoji if no image -->
+                                                                            <TextBlock Text="🍽️" 
+                                                                                      FontSize="40"
+                                                                                      VerticalAlignment="Center"
+                                                                                      HorizontalAlignment="Center"
+                                                                                      Foreground="#CCCCCC"
+                                                                                      Visibility="{Binding HasImage, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                    
+                                                                    <!-- PRODUCT INFO -->
+                                                                    <StackPanel Grid.Row="1" 
+                                                                               VerticalAlignment="Center"
+                                                                               Margin="5">
+                                                                        <!-- Product Name -->
+                                                                        <TextBlock Text="{Binding ProductName}"
+                                                                                  FontSize="13"
+                                                                                  FontWeight="Bold"
+                                                                                  Foreground="White"
+                                                                                  TextAlignment="Center"
+                                                                                  TextWrapping="Wrap"
+                                                                                  Margin="0,0,0,3"/>
+                                                                        
+                                                                        <!-- Price -->
+                                                                        <TextBlock Text="{Binding Price, StringFormat='{}{0:N2} ₺'}"
+                                                                                  FontSize="15"
+                                                                                  FontWeight="Bold"
+                                                                                  Foreground="#FFEB3B"
+                                                                                  TextAlignment="Center"/>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+                                                            
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#66BB6A"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter Property="Background" Value="#388E3C"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Button.Style>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
