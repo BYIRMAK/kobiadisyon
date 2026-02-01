@@ -116,6 +116,8 @@ namespace KobiPOS.Services
                     UnitPrice REAL NOT NULL,
                     LineTotal REAL NOT NULL,
                     Notes TEXT,
+                    AddedTime TEXT,
+                    AddedBy TEXT,
                     FOREIGN KEY (OrderID) REFERENCES Orders (ID),
                     FOREIGN KEY (ProductID) REFERENCES Products (ID)
                 );
