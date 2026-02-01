@@ -428,6 +428,33 @@ namespace KobiPOS.Services
             return tables;
         }
 
+        public List<Table> GetTablesByZone(int zoneId)
+        {
+            var tables = new List<Table>();
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand("SELECT ID, TableNumber, TableName, Status, Capacity, ZoneID, IsActive FROM Tables WHERE ZoneID = @zoneId ORDER BY TableNumber", connection);
+            command.Parameters.AddWithValue("@zoneId", zoneId);
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                tables.Add(new Table
+                {
+                    ID = reader.GetInt32(0),
+                    TableNumber = reader.GetInt32(1),
+                    TableName = reader.GetString(2),
+                    Status = reader.GetString(3),
+                    Capacity = reader.GetInt32(4),
+                    ZoneID = reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                    IsActive = reader.IsDBNull(6) ? true : reader.GetInt32(6) == 1
+                });
+            }
+
+            return tables;
+        }
+
         public void UpdateTableStatus(int tableId, string status)
         {
             using var connection = GetConnection();

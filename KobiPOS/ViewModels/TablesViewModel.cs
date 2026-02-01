@@ -12,7 +12,11 @@ namespace KobiPOS.ViewModels
         private readonly DatabaseService _db;
         private readonly User _currentUser;
         private ObservableCollection<TableDisplayModel> _tables;
+        private ObservableCollection<TableDisplayModel> _filteredTables;
+        private ObservableCollection<Zone> _zones;
         private TableDisplayModel? _selectedTable;
+        private Zone? _selectedZone;
+        private List<TableDisplayModel> _allTables;
 
         public ObservableCollection<TableDisplayModel> Tables
         {
@@ -20,10 +24,34 @@ namespace KobiPOS.ViewModels
             set => SetProperty(ref _tables, value);
         }
 
+        public ObservableCollection<TableDisplayModel> FilteredTables
+        {
+            get => _filteredTables;
+            set => SetProperty(ref _filteredTables, value);
+        }
+
+        public ObservableCollection<Zone> Zones
+        {
+            get => _zones;
+            set => SetProperty(ref _zones, value);
+        }
+
         public TableDisplayModel? SelectedTable
         {
             get => _selectedTable;
             set => SetProperty(ref _selectedTable, value);
+        }
+
+        public Zone? SelectedZone
+        {
+            get => _selectedZone;
+            set
+            {
+                if (SetProperty(ref _selectedZone, value))
+                {
+                    FilterTablesByZone();
+                }
+            }
         }
 
         public ICommand OpenTableCommand { get; }
@@ -37,26 +65,79 @@ namespace KobiPOS.ViewModels
             _currentUser = currentUser;
             _db = DatabaseService.Instance;
             _tables = new ObservableCollection<TableDisplayModel>();
+            _filteredTables = new ObservableCollection<TableDisplayModel>();
+            _zones = new ObservableCollection<Zone>();
+            _allTables = new List<TableDisplayModel>();
 
             OpenTableCommand = new RelayCommand(ExecuteOpenTable);
             CloseTableCommand = new RelayCommand(ExecuteCloseTable, CanExecuteCloseTable);
             RefreshCommand = new RelayCommand(_ => LoadTables());
 
+            LoadZones();
             LoadTables();
+        }
+
+        private void LoadZones()
+        {
+            var zones = _db.GetAllZones();
+            Zones.Clear();
+            
+            // Add "Tümü" (All) tab
+            Zones.Add(new Zone
+            {
+                ID = 0,
+                ZoneName = "Tümü",
+                ColorCode = "#808080"
+            });
+            
+            foreach (var zone in zones)
+            {
+                Zones.Add(zone);
+            }
+            
+            SelectedZone = Zones.FirstOrDefault();
         }
 
         private void LoadTables()
         {
             var tables = _db.GetAllTables();
             Tables.Clear();
+            _allTables.Clear();
+            
             foreach (var table in tables)
             {
                 var orderTotal = _db.GetTableOrderTotal(table.ID);
-                Tables.Add(new TableDisplayModel
+                var displayModel = new TableDisplayModel
                 {
                     Table = table,
                     OrderTotal = orderTotal
-                });
+                };
+                Tables.Add(displayModel);
+                _allTables.Add(displayModel);
+            }
+            
+            FilterTablesByZone();
+        }
+
+        private void FilterTablesByZone()
+        {
+            FilteredTables.Clear();
+            
+            if (SelectedZone == null || SelectedZone.ID == 0)
+            {
+                // Show all tables
+                foreach (var table in _allTables)
+                {
+                    FilteredTables.Add(table);
+                }
+            }
+            else
+            {
+                // Show only tables in selected zone
+                foreach (var table in _allTables.Where(t => t.Table.ZoneID == SelectedZone.ID))
+                {
+                    FilteredTables.Add(table);
+                }
             }
         }
 
