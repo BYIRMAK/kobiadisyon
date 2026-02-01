@@ -75,6 +75,12 @@ public partial class MainWindow : Window
         _viewModel.CloseSidebarCommand.Execute(null);
     }
 
+    private void ReservationsButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowReservations();
+        _viewModel.CloseSidebarCommand.Execute(null);
+    }
+
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
@@ -221,6 +227,13 @@ public partial class MainWindow : Window
         var zoneManagementView = new ZoneManagementView();
         zoneManagementView.DataContext = new ZoneManagementViewModel();
         ContentArea.Content = zoneManagementView;
+    }
+
+    private void ShowReservations()
+    {
+        var reservationView = new ReservationView();
+        reservationView.DataContext = new ReservationViewModel(_viewModel.CurrentUser);
+        ContentArea.Content = reservationView;
     }
 
     private void OnLogoutRequested(object? sender, EventArgs e)
