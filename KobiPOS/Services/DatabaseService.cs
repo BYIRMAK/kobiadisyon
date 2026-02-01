@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using KobiPOS.Models;
 using KobiPOS.Helpers;
 using System.IO;
+using System.Globalization;
 
 namespace KobiPOS.Services
 {
@@ -9,6 +10,11 @@ namespace KobiPOS.Services
     {
         private readonly string _connectionString;
         private static DatabaseService? _instance;
+        
+        // DateTime format constants
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        private const string DateFormat = "yyyy-MM-dd";
+        private const string TimeFormat = @"HH\:mm\:ss";
 
         public static DatabaseService Instance
         {
@@ -1222,8 +1228,8 @@ namespace KobiPOS.Services
                     command.Parameters.AddWithValue("@CustomerPhone", reservation.CustomerPhone);
                     command.Parameters.AddWithValue("@CustomerEmail", reservation.CustomerEmail ?? string.Empty);
                     command.Parameters.AddWithValue("@GuestCount", reservation.GuestCount);
-                    command.Parameters.AddWithValue("@ReservationDate", reservation.ReservationDate.ToString("yyyy-MM-dd"));
-                    command.Parameters.AddWithValue("@ReservationTime", reservation.ReservationTime.ToString(@"hh\:mm\:ss"));
+                    command.Parameters.AddWithValue("@ReservationDate", reservation.ReservationDate.ToString(DateFormat));
+                    command.Parameters.AddWithValue("@ReservationTime", reservation.ReservationTime.ToString(TimeFormat));
                     command.Parameters.AddWithValue("@TableID", reservation.TableID);
                     command.Parameters.AddWithValue("@Status", reservation.Status);
                     command.Parameters.AddWithValue("@Notes", reservation.Notes ?? string.Empty);
@@ -1256,13 +1262,13 @@ namespace KobiPOS.Services
                     if (startDate.HasValue)
                     {
                         command.CommandText += " AND r.ReservationDate >= @StartDate";
-                        command.Parameters.AddWithValue("@StartDate", startDate.Value.ToString("yyyy-MM-dd"));
+                        command.Parameters.AddWithValue("@StartDate", startDate.Value.ToString(DateFormat));
                     }
                     
                     if (endDate.HasValue)
                     {
                         command.CommandText += " AND r.ReservationDate <= @EndDate";
-                        command.Parameters.AddWithValue("@EndDate", endDate.Value.ToString("yyyy-MM-dd"));
+                        command.Parameters.AddWithValue("@EndDate", endDate.Value.ToString(DateFormat));
                     }
                     
                     if (!string.IsNullOrEmpty(status))
@@ -1284,14 +1290,14 @@ namespace KobiPOS.Services
                                 CustomerPhone = reader.GetString(2),
                                 CustomerEmail = reader.IsDBNull(3) ? null : reader.GetString(3),
                                 GuestCount = reader.GetInt32(4),
-                                ReservationDate = DateTime.Parse(reader.GetString(5)),
-                                ReservationTime = TimeSpan.Parse(reader.GetString(6)),
+                                ReservationDate = DateTime.ParseExact(reader.GetString(5), DateFormat, CultureInfo.InvariantCulture),
+                                ReservationTime = TimeSpan.ParseExact(reader.GetString(6), TimeFormat, CultureInfo.InvariantCulture),
                                 TableID = reader.GetInt32(7),
                                 Status = reader.GetString(8),
                                 Notes = reader.IsDBNull(9) ? null : reader.GetString(9),
                                 CreatedBy = reader.GetInt32(10),
-                                CreatedDate = DateTime.Parse(reader.GetString(11)),
-                                UpdatedDate = reader.IsDBNull(12) ? null : DateTime.Parse(reader.GetString(12)),
+                                CreatedDate = DateTime.ParseExact(reader.GetString(11), DateTimeFormat, CultureInfo.InvariantCulture),
+                                UpdatedDate = reader.IsDBNull(12) ? null : DateTime.ParseExact(reader.GetString(12), DateTimeFormat, CultureInfo.InvariantCulture),
                                 TableName = reader.GetString(13),
                                 SectionName = reader.IsDBNull(14) ? string.Empty : reader.GetString(14)
                             });
@@ -1351,12 +1357,12 @@ namespace KobiPOS.Services
                     command.Parameters.AddWithValue("@CustomerPhone", reservation.CustomerPhone);
                     command.Parameters.AddWithValue("@CustomerEmail", reservation.CustomerEmail ?? string.Empty);
                     command.Parameters.AddWithValue("@GuestCount", reservation.GuestCount);
-                    command.Parameters.AddWithValue("@ReservationDate", reservation.ReservationDate.ToString("yyyy-MM-dd"));
-                    command.Parameters.AddWithValue("@ReservationTime", reservation.ReservationTime.ToString(@"hh\:mm\:ss"));
+                    command.Parameters.AddWithValue("@ReservationDate", reservation.ReservationDate.ToString(DateFormat));
+                    command.Parameters.AddWithValue("@ReservationTime", reservation.ReservationTime.ToString(TimeFormat));
                     command.Parameters.AddWithValue("@TableID", reservation.TableID);
                     command.Parameters.AddWithValue("@Status", reservation.Status);
                     command.Parameters.AddWithValue("@Notes", reservation.Notes ?? string.Empty);
-                    command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now.ToString(DateTimeFormat));
                     
                     command.ExecuteNonQuery();
                 }
@@ -1380,7 +1386,7 @@ namespace KobiPOS.Services
                     
                     command.Parameters.AddWithValue("@ID", reservationId);
                     command.Parameters.AddWithValue("@Status", newStatus);
-                    command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now.ToString(DateTimeFormat));
                     
                     command.ExecuteNonQuery();
                 }
@@ -1392,7 +1398,7 @@ namespace KobiPOS.Services
         /// </summary>
         public void CancelReservation(int reservationId)
         {
-            UpdateReservationStatus(reservationId, "Cancelled");
+            UpdateReservationStatus(reservationId, ReservationStatus.Cancelled);
         }
 
         /// <summary>
@@ -1400,7 +1406,7 @@ namespace KobiPOS.Services
         /// </summary>
         public void ConfirmReservation(int reservationId)
         {
-            UpdateReservationStatus(reservationId, "Confirmed");
+            UpdateReservationStatus(reservationId, ReservationStatus.Confirmed);
         }
 
         /// <summary>
@@ -1408,7 +1414,7 @@ namespace KobiPOS.Services
         /// </summary>
         public void CompleteReservation(int reservationId)
         {
-            UpdateReservationStatus(reservationId, "Completed");
+            UpdateReservationStatus(reservationId, ReservationStatus.Completed);
         }
 
         /// <summary>

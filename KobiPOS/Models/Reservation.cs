@@ -13,7 +13,7 @@ namespace KobiPOS.Models
         public DateTime ReservationDate { get; set; } = DateTime.Today;
         public TimeSpan ReservationTime { get; set; } = new TimeSpan(19, 0, 0); // Default: 19:00
         public int TableID { get; set; }
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; } = ReservationStatus.Pending;
         public string? Notes { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
@@ -28,40 +28,40 @@ namespace KobiPOS.Models
         
         public string FormattedDate => ReservationDate.ToString("dd.MM.yyyy");
         
-        public string FormattedTime => ReservationTime.ToString(@"hh\:mm");
+        public string FormattedTime => ReservationTime.ToString(@"HH\:mm");
         
         public string FormattedDateTime => $"{FormattedDate} {FormattedTime}";
         
         // Durum metinleri (Türkçe)
         public string StatusText => Status switch
         {
-            "Pending" => "Bekliyor",
-            "Confirmed" => "Onaylandı",
-            "Completed" => "Tamamlandı",
-            "Cancelled" => "İptal Edildi",
-            "NoShow" => "Gelmedi",
+            ReservationStatus.Pending => "Bekliyor",
+            ReservationStatus.Confirmed => "Onaylandı",
+            ReservationStatus.Completed => "Tamamlandı",
+            ReservationStatus.Cancelled => "İptal Edildi",
+            ReservationStatus.NoShow => "Gelmedi",
             _ => Status
         };
         
         // Durum ikonları
         public string StatusIcon => Status switch
         {
-            "Pending" => "⏳",
-            "Confirmed" => "✅",
-            "Completed" => "✔️",
-            "Cancelled" => "❌",
-            "NoShow" => "🚫",
+            ReservationStatus.Pending => "⏳",
+            ReservationStatus.Confirmed => "✅",
+            ReservationStatus.Completed => "✔️",
+            ReservationStatus.Cancelled => "❌",
+            ReservationStatus.NoShow => "🚫",
             _ => "📅"
         };
         
         // Durum renkleri
         public string StatusColor => Status switch
         {
-            "Pending" => "#FF9800",      // Turuncu
-            "Confirmed" => "#4CAF50",    // Yeşil
-            "Completed" => "#9E9E9E",    // Gri
-            "Cancelled" => "#F44336",    // Kırmızı
-            "NoShow" => "#795548",       // Kahverengi
+            ReservationStatus.Pending => "#FF9800",      // Turuncu
+            ReservationStatus.Confirmed => "#4CAF50",    // Yeşil
+            ReservationStatus.Completed => "#9E9E9E",    // Gri
+            ReservationStatus.Cancelled => "#F44336",    // Kırmızı
+            ReservationStatus.NoShow => "#795548",       // Kahverengi
             _ => "#2196F3"               // Mavi
         };
         
@@ -80,7 +80,7 @@ namespace KobiPOS.Models
         public bool IsPast => TimeUntilReservation.TotalMinutes < 0;
         
         // Rezervasyon aktif mi? (Pending veya Confirmed)
-        public bool IsActive => Status == "Pending" || Status == "Confirmed";
+        public bool IsActive => Status == ReservationStatus.Pending || Status == ReservationStatus.Confirmed;
         
         // Görünüm için özet bilgi
         public string DisplayInfo => $"{CustomerName} - {GuestCount} kişi - {FormattedTime}";

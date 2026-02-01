@@ -16,18 +16,18 @@ namespace KobiPOS.Models
         // Masa rengi (güncellenmiş - Rezerve durumu eklendi)
         public string StatusColor => Status switch
         {
-            "Boş" => "#4CAF50",        // Yeşil
-            "Dolu" => "#F44336",       // Kırmızı
-            "Rezerve" => "#FFC107",    // Sarı (AMBER)
+            TableStatus.Empty => "#4CAF50",        // Yeşil
+            TableStatus.Occupied => "#F44336",     // Kırmızı
+            TableStatus.Reserved => "#FFC107",     // Sarı (AMBER)
             _ => "#9E9E9E"             // Gri
         };
         
         // Masa ikonu (güncellenmiş)
         public string StatusIcon => Status switch
         {
-            "Boş" => "✓",
-            "Dolu" => "●",
-            "Rezerve" => "📅",
+            TableStatus.Empty => "✓",
+            TableStatus.Occupied => "●",
+            TableStatus.Reserved => "📅",
             _ => "?"
         };
         
@@ -36,12 +36,12 @@ namespace KobiPOS.Models
         {
             get
             {
-                if (Status == "Rezerve" && CurrentReservation != null)
+                if (Status == TableStatus.Reserved && CurrentReservation != null)
                 {
                     // Rezerve masalar için özel görünüm
                     return $"REZERVE\n{CurrentReservation.FormattedTime}\n{CurrentReservation.CustomerName}";
                 }
-                else if (Status == "Dolu")
+                else if (Status == TableStatus.Occupied)
                 {
                     return "Dolu";
                 }
@@ -56,12 +56,12 @@ namespace KobiPOS.Models
         public string CapacityText => $"Kap: {Capacity} kişi";
         
         // Rezerve mi?
-        public bool IsReserved => Status == "Rezerve";
+        public bool IsReserved => Status == TableStatus.Reserved;
         
         // Boş mu?
-        public bool IsAvailable => Status == "Boş";
+        public bool IsAvailable => Status == TableStatus.Empty;
         
         // Dolu mu?
-        public bool IsOccupied => Status == "Dolu";
+        public bool IsOccupied => Status == TableStatus.Occupied;
     }
 }

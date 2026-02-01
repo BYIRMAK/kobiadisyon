@@ -15,6 +15,15 @@ namespace KobiPOS.Models
         public const string Reserved = "Rezerve";
     }
 
+    public static class ReservationStatus
+    {
+        public const string Pending = "Pending";
+        public const string Confirmed = "Confirmed";
+        public const string Completed = "Completed";
+        public const string Cancelled = "Cancelled";
+        public const string NoShow = "NoShow";
+    }
+
     public static class PaymentType
     {
         public const string Cash = "Nakit";
