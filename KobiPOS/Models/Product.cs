@@ -9,5 +9,10 @@ namespace KobiPOS.Models
         public int StockQuantity { get; set; }
         public string Barcode { get; set; } = string.Empty;
         public string ImagePath { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Unit { get; set; } = "Adet";
+        public bool StockTracking { get; set; }
+        public int CurrentStock { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

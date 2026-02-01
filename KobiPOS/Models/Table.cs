@@ -7,5 +7,7 @@ namespace KobiPOS.Models
         public string TableName { get; set; } = string.Empty;
         public string Status { get; set; } = "Boş"; // Boş, Dolu, Rezerve
         public int Capacity { get; set; }
+        public int? ZoneID { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
