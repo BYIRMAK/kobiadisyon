@@ -11,6 +11,7 @@ namespace KobiPOS.ViewModels
 {
     public class ZoneManagementViewModel : ViewModelBase
     {
+        private const string DefaultColorCode = "#2196F3";
         private readonly DatabaseService _databaseService;
         private ObservableCollection<Zone> _zones;
         private Zone? _selectedZone;
@@ -90,7 +91,7 @@ namespace KobiPOS.ViewModels
         {
             EditingZone = new Zone
             {
-                ColorCode = "#2196F3",
+                ColorCode = DefaultColorCode,
                 IsActive = true
             };
             IsEditMode = true;
@@ -193,7 +194,7 @@ namespace KobiPOS.ViewModels
 
             if (string.IsNullOrWhiteSpace(EditingZone.ColorCode))
             {
-                EditingZone.ColorCode = "#2196F3";
+                EditingZone.ColorCode = DefaultColorCode;
             }
 
             return true;
