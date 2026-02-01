@@ -154,13 +154,21 @@ namespace KobiPOS.Views.Dialogs
                     status = selectedStatusItem.Tag.ToString();
                 }
                 
+                // TIMESPAN PARSE - GÜVENLİ YOL
+                TimeSpan reservationTime;
+                if (!TimeSpan.TryParse(timeString, out reservationTime))
+                {
+                    // Default 19:00
+                    reservationTime = TimeSpan.FromHours(19);
+                }
+                
                 // REZERVASYON GÜNCELLE
                 _reservation.CustomerName = CustomerName.Trim();
                 _reservation.CustomerPhone = CustomerPhone.Trim();
                 _reservation.CustomerEmail = string.IsNullOrWhiteSpace(CustomerEmail) ? null : CustomerEmail.Trim();
                 _reservation.GuestCount = guestCount;
                 _reservation.ReservationDate = ReservationDate;
-                _reservation.ReservationTime = TimeSpan.Parse(timeString);
+                _reservation.ReservationTime = reservationTime;
                 _reservation.TableID = TableID;
                 _reservation.Status = status;
                 _reservation.Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim();
