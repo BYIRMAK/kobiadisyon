@@ -84,6 +84,7 @@ namespace KobiPOS.ViewModels
         public ICommand CloseCheckCommand { get; }
         public ICommand BackCommand { get; }
         public ICommand SelectCategoryCommand { get; }
+        public ICommand ShowOrderHistoryCommand { get; }
 
         public event EventHandler? OrderSaved;
         public event EventHandler? CheckoutRequested;
@@ -110,6 +111,7 @@ namespace KobiPOS.ViewModels
             CloseCheckCommand = new RelayCommand(_ => ExecuteCloseCheck(), _ => OrderItems.Count > 0);
             BackCommand = new RelayCommand(_ => BackRequested?.Invoke(this, EventArgs.Empty));
             SelectCategoryCommand = new RelayCommand(param => SelectedCategory = param as Category);
+            ShowOrderHistoryCommand = new RelayCommand(_ => ExecuteShowOrderHistory(), _ => _currentOrder != null);
 
             LoadCategories();
             LoadExistingOrder();
@@ -157,7 +159,9 @@ namespace KobiPOS.ViewModels
                         ProductName = detail.ProductName,
                         UnitPrice = detail.UnitPrice,
                         Quantity = detail.Quantity,
-                        Notes = detail.Notes
+                        Notes = detail.Notes,
+                        AddedTime = detail.AddedTime,
+                        AddedBy = detail.AddedBy
                     };
                     item.PropertyChanged += OrderItem_PropertyChanged;
                     OrderItems.Add(item);
@@ -170,23 +174,19 @@ namespace KobiPOS.ViewModels
         {
             if (parameter is Product product)
             {
-                var existingItem = OrderItems.FirstOrDefault(x => x.ProductID == product.ID);
-                if (existingItem != null)
+                // YENİ: Her ekleme için yeni satır oluştur (zaman takibi için)
+                // Aynı ürün tekrar eklenince yeni bir zaman damgasıyla yeni satır ekle
+                var newItem = new OrderItem
                 {
-                    existingItem.Quantity++;
-                }
-                else
-                {
-                    var newItem = new OrderItem
-                    {
-                        ProductID = product.ID,
-                        ProductName = product.ProductName,
-                        UnitPrice = product.Price,
-                        Quantity = 1
-                    };
-                    newItem.PropertyChanged += OrderItem_PropertyChanged;
-                    OrderItems.Add(newItem);
-                }
+                    ProductID = product.ID,
+                    ProductName = product.ProductName,
+                    UnitPrice = product.Price,
+                    Quantity = 1,
+                    AddedTime = DateTime.Now,
+                    AddedBy = _currentUser.FullName
+                };
+                newItem.PropertyChanged += OrderItem_PropertyChanged;
+                OrderItems.Add(newItem);
                 CalculateTotals();
             }
         }
@@ -276,7 +276,9 @@ namespace KobiPOS.ViewModels
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                     LineTotal = item.LineTotal,
-                    Notes = item.Notes
+                    Notes = item.Notes,
+                    AddedTime = item.AddedTime,
+                    AddedBy = item.AddedBy
                 };
                 _db.AddOrderDetail(detail);
             }
@@ -333,7 +335,9 @@ namespace KobiPOS.ViewModels
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice,
                         LineTotal = item.LineTotal,
-                        Notes = item.Notes
+                        Notes = item.Notes,
+                        AddedTime = item.AddedTime,
+                        AddedBy = item.AddedBy
                     };
                     _db.AddOrderDetail(detail);
                 }
@@ -347,6 +351,15 @@ namespace KobiPOS.ViewModels
             {
                 MessageBox.Show($"Sipariş kaydedilemedi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void ExecuteShowOrderHistory()
+        {
+            if (_currentOrder == null) return;
+
+            var historyDialog = new Views.OrderHistoryDialog(_currentOrder, _currentUser);
+            historyDialog.Owner = Application.Current.MainWindow;
+            historyDialog.ShowDialog();
         }
     }
 }

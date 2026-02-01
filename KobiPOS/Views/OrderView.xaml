@@ -199,9 +199,26 @@
                     </Grid.RowDefinitions>
 
                     <!-- Order Header -->
-                    <TextBlock Grid.Row="0" Text="Sipariş Listesi" 
-                               FontSize="18" FontWeight="Bold"
-                               Margin="0,0,0,10"/>
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="Sipariş Listesi" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                        
+                        <!-- Geçmiş Liste Butonu -->
+                        <Button Grid.Column="1" 
+                                Content="📜 Geçmiş Liste"
+                                Command="{Binding ShowOrderHistoryCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                Padding="10,5"
+                                Margin="5,0"/>
+                    </Grid>
 
                     <!-- Order Items -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -215,10 +232,18 @@
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
 
+                                            <!-- Time Stamp -->
+                                            <TextBlock Grid.Row="0" 
+                                                       Text="{Binding FormattedTime, StringFormat='⏰ {0}'}" 
+                                                       FontSize="11"
+                                                       Foreground="#666"
+                                                       Margin="0,0,0,3"/>
+
                                             <!-- Product Name and Remove Button -->
-                                            <Grid Grid.Row="0">
+                                            <Grid Grid.Row="1">
                                                 <TextBlock Text="{Binding ProductName}" 
                                                            FontWeight="Bold" 
                                                            FontSize="14"/>
@@ -235,7 +260,7 @@
                                             </Grid>
 
                                             <!-- Quantity and Price -->
-                                            <Grid Grid.Row="1" Margin="0,5,0,0">
+                                            <Grid Grid.Row="2" Margin="0,5,0,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
@@ -281,7 +306,7 @@
                                             </Grid>
 
                                             <!-- Notes -->
-                                            <TextBox Grid.Row="2" 
+                                            <TextBox Grid.Row="3" 
                                                      Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
                                                      Margin="0,5,0,0"
                                                      Height="30"
