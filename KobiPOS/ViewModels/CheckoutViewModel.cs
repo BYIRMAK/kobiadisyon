@@ -91,6 +91,10 @@ namespace KobiPOS.ViewModels
                     if (value == PaymentType.Cash)
                     {
                         CashReceived = TotalAmount;
+                        
+                        // Nakit seçildiğinde direkt ödemeyi tamamla
+                        CompletePayment();
+                        return;
                     }
                     
                     // Re-evaluate the CompletePaymentCommand's CanExecute
