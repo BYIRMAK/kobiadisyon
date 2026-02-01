@@ -5,6 +5,7 @@ namespace KobiPOS.Models
 {
     public class Product : INotifyPropertyChanged
     {
+        private const string DefaultImagePath = "pack://application:,,,/Images/no-product-image.png";
         private string _imagePath = string.Empty;
 
         public int ID { get; set; }
@@ -39,7 +40,7 @@ namespace KobiPOS.Models
 
         public string DisplayImagePath => 
             string.IsNullOrEmpty(ImagePath) 
-                ? "pack://application:,,,/Images/no-product-image.png" 
+                ? DefaultImagePath 
                 : ImagePath;
 
         public event PropertyChangedEventHandler? PropertyChanged;

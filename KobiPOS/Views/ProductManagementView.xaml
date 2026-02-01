@@ -58,18 +58,7 @@
                                     Command="{Binding DataContext.FilterCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}"
                                     Style="{StaticResource CategoryFilterButton}"
-                                    Margin="5,0">
-                                <Button.Triggers>
-                                    <EventTrigger RoutedEvent="Button.Loaded">
-                                        <BeginStoryboard>
-                                            <Storyboard>
-                                                <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" 
-                                                                Duration="0:0:0.2"/>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </EventTrigger>
-                                </Button.Triggers>
-                            </Button>
+                                    Margin="5,0"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

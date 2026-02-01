@@ -43,14 +43,14 @@ namespace KobiPOS.ViewModels
             LoadCategories();
             LoadProducts();
             
-            // Set first category as selected by default
+            // Set first category as selected by default, or show all if no categories
             if (Categories.Count > 0)
             {
                 SelectedCategory = Categories[0];
             }
             else
             {
-                // If no categories, show all products
+                // No categories available, show all products
                 FilterProductsByCategory();
             }
         }
@@ -80,6 +80,11 @@ namespace KobiPOS.ViewModels
             {
                 if (SetProperty(ref _selectedCategory, value))
                 {
+                    // Update IsSelected property for all categories
+                    foreach (var category in Categories)
+                    {
+                        category.IsSelected = (category == value);
+                    }
                     FilterProductsByCategory();
                 }
             }
