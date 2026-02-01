@@ -79,10 +79,14 @@ namespace KobiPOS.Services
                     TableID INTEGER NOT NULL,
                     OrderDate TEXT NOT NULL,
                     UserID INTEGER NOT NULL,
-                    TotalAmount REAL NOT NULL,
+                    SubTotal REAL NOT NULL DEFAULT 0,
+                    TaxAmount REAL NOT NULL DEFAULT 0,
                     DiscountAmount REAL NOT NULL DEFAULT 0,
+                    DiscountPercent REAL NOT NULL DEFAULT 0,
+                    TotalAmount REAL NOT NULL,
                     PaymentType TEXT,
                     Status TEXT NOT NULL DEFAULT 'Bekliyor',
+                    Notes TEXT,
                     FOREIGN KEY (TableID) REFERENCES Tables (ID),
                     FOREIGN KEY (UserID) REFERENCES Users (ID)
                 );
@@ -91,8 +95,10 @@ namespace KobiPOS.Services
                     ID INTEGER PRIMARY KEY AUTOINCREMENT,
                     OrderID INTEGER NOT NULL,
                     ProductID INTEGER NOT NULL,
+                    ProductName TEXT NOT NULL,
                     Quantity INTEGER NOT NULL,
                     UnitPrice REAL NOT NULL,
+                    LineTotal REAL NOT NULL,
                     Notes TEXT,
                     FOREIGN KEY (OrderID) REFERENCES Orders (ID),
                     FOREIGN KEY (ProductID) REFERENCES Products (ID)
@@ -412,18 +418,22 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(@"
-                INSERT INTO Orders (TableID, OrderDate, UserID, TotalAmount, DiscountAmount, PaymentType, Status)
-                VALUES (@tableId, @orderDate, @userId, @totalAmount, @discountAmount, @paymentType, @status);
+                INSERT INTO Orders (TableID, OrderDate, UserID, SubTotal, TaxAmount, DiscountAmount, DiscountPercent, TotalAmount, PaymentType, Status, Notes)
+                VALUES (@tableId, @orderDate, @userId, @subTotal, @taxAmount, @discountAmount, @discountPercent, @totalAmount, @paymentType, @status, @notes);
                 SELECT last_insert_rowid();
             ", connection);
 
             command.Parameters.AddWithValue("@tableId", order.TableID);
             command.Parameters.AddWithValue("@orderDate", order.OrderDate.ToString("yyyy-MM-dd HH:mm:ss"));
             command.Parameters.AddWithValue("@userId", order.UserID);
-            command.Parameters.AddWithValue("@totalAmount", order.TotalAmount);
+            command.Parameters.AddWithValue("@subTotal", order.SubTotal);
+            command.Parameters.AddWithValue("@taxAmount", order.TaxAmount);
             command.Parameters.AddWithValue("@discountAmount", order.DiscountAmount);
-            command.Parameters.AddWithValue("@paymentType", order.PaymentType);
+            command.Parameters.AddWithValue("@discountPercent", order.DiscountPercent);
+            command.Parameters.AddWithValue("@totalAmount", order.TotalAmount);
+            command.Parameters.AddWithValue("@paymentType", order.PaymentType ?? string.Empty);
             command.Parameters.AddWithValue("@status", order.Status);
+            command.Parameters.AddWithValue("@notes", order.Notes ?? string.Empty);
 
             return Convert.ToInt32(command.ExecuteScalar());
         }
@@ -434,17 +444,141 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(@"
-                INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, Notes)
-                VALUES (@orderId, @productId, @quantity, @unitPrice, @notes)
+                INSERT INTO OrderDetails (OrderID, ProductID, ProductName, Quantity, UnitPrice, LineTotal, Notes)
+                VALUES (@orderId, @productId, @productName, @quantity, @unitPrice, @lineTotal, @notes)
             ", connection);
 
             command.Parameters.AddWithValue("@orderId", detail.OrderID);
             command.Parameters.AddWithValue("@productId", detail.ProductID);
+            command.Parameters.AddWithValue("@productName", detail.ProductName);
             command.Parameters.AddWithValue("@quantity", detail.Quantity);
             command.Parameters.AddWithValue("@unitPrice", detail.UnitPrice);
-            command.Parameters.AddWithValue("@notes", detail.Notes);
+            command.Parameters.AddWithValue("@lineTotal", detail.LineTotal);
+            command.Parameters.AddWithValue("@notes", detail.Notes ?? string.Empty);
 
             command.ExecuteNonQuery();
+        }
+
+        public Order? GetPendingOrderByTable(int tableId)
+        {
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand(
+                "SELECT * FROM Orders WHERE TableID = @tableId AND Status != @servedStatus ORDER BY OrderDate DESC LIMIT 1",
+                connection);
+            command.Parameters.AddWithValue("@tableId", tableId);
+            command.Parameters.AddWithValue("@servedStatus", OrderStatus.Served);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return new Order
+                {
+                    ID = reader.GetInt32(0),
+                    TableID = reader.GetInt32(1),
+                    OrderDate = DateTime.Parse(reader.GetString(2)),
+                    UserID = reader.GetInt32(3),
+                    SubTotal = reader.GetDecimal(4),
+                    TaxAmount = reader.GetDecimal(5),
+                    DiscountAmount = reader.GetDecimal(6),
+                    DiscountPercent = reader.GetDecimal(7),
+                    TotalAmount = reader.GetDecimal(8),
+                    PaymentType = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                    Status = reader.GetString(10),
+                    Notes = reader.IsDBNull(11) ? string.Empty : reader.GetString(11)
+                };
+            }
+
+            return null;
+        }
+
+        public List<OrderDetail> GetOrderDetails(int orderId)
+        {
+            var details = new List<OrderDetail>();
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand(
+                "SELECT * FROM OrderDetails WHERE OrderID = @orderId",
+                connection);
+            command.Parameters.AddWithValue("@orderId", orderId);
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                details.Add(new OrderDetail
+                {
+                    ID = reader.GetInt32(0),
+                    OrderID = reader.GetInt32(1),
+                    ProductID = reader.GetInt32(2),
+                    ProductName = reader.GetString(3),
+                    Quantity = reader.GetInt32(4),
+                    UnitPrice = reader.GetDecimal(5),
+                    LineTotal = reader.GetDecimal(6),
+                    Notes = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
+                });
+            }
+
+            return details;
+        }
+
+        public void UpdateOrder(Order order)
+        {
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand(@"
+                UPDATE Orders 
+                SET SubTotal = @subTotal,
+                    TaxAmount = @taxAmount,
+                    DiscountAmount = @discountAmount,
+                    DiscountPercent = @discountPercent,
+                    TotalAmount = @totalAmount,
+                    PaymentType = @paymentType,
+                    Status = @status,
+                    Notes = @notes
+                WHERE ID = @id
+            ", connection);
+
+            command.Parameters.AddWithValue("@subTotal", order.SubTotal);
+            command.Parameters.AddWithValue("@taxAmount", order.TaxAmount);
+            command.Parameters.AddWithValue("@discountAmount", order.DiscountAmount);
+            command.Parameters.AddWithValue("@discountPercent", order.DiscountPercent);
+            command.Parameters.AddWithValue("@totalAmount", order.TotalAmount);
+            command.Parameters.AddWithValue("@paymentType", order.PaymentType ?? string.Empty);
+            command.Parameters.AddWithValue("@status", order.Status);
+            command.Parameters.AddWithValue("@notes", order.Notes ?? string.Empty);
+            command.Parameters.AddWithValue("@id", order.ID);
+
+            command.ExecuteNonQuery();
+        }
+
+        public void DeleteOrderDetails(int orderId)
+        {
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand(
+                "DELETE FROM OrderDetails WHERE OrderID = @orderId",
+                connection);
+            command.Parameters.AddWithValue("@orderId", orderId);
+            command.ExecuteNonQuery();
+        }
+
+        public decimal GetTableOrderTotal(int tableId)
+        {
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand(
+                "SELECT COALESCE(SUM(TotalAmount), 0) FROM Orders WHERE TableID = @tableId AND Status != @servedStatus",
+                connection);
+            command.Parameters.AddWithValue("@tableId", tableId);
+            command.Parameters.AddWithValue("@servedStatus", OrderStatus.Served);
+
+            var result = command.ExecuteScalar();
+            return result != null ? Convert.ToDecimal(result) : 0;
         }
 
         // Settings methods

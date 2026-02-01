@@ -53,3 +53,7 @@ Desktop.ini
 
 # Build output
 publish/
+
+# Application-specific
+Receipts/
+Database/

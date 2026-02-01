@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.IO;
 using KobiPOS.Models;
 using KobiPOS.ViewModels;
 using KobiPOS.Views;
@@ -79,8 +80,80 @@ public partial class MainWindow : Window
     private void ShowTables()
     {
         var tablesView = new TablesView();
-        tablesView.DataContext = new TablesViewModel(_viewModel.CurrentUser);
+        var tablesViewModel = new TablesViewModel(_viewModel.CurrentUser);
+        tablesViewModel.TableSelected += OnTableSelected;
+        tablesView.DataContext = tablesViewModel;
         ContentArea.Content = tablesView;
+    }
+
+    private void OnTableSelected(object? sender, Table table)
+    {
+        var orderView = new OrderView();
+        var orderViewModel = new OrderViewModel(_viewModel.CurrentUser, table);
+        orderViewModel.BackRequested += (s, e) => ShowTables();
+        orderViewModel.OrderSaved += (s, e) => ShowTables();
+        orderViewModel.CheckoutRequested += (s, e) => ShowCheckout(orderViewModel, table);
+        orderView.DataContext = orderViewModel;
+        ContentArea.Content = orderView;
+    }
+
+    private void ShowCheckout(OrderViewModel orderViewModel, Table table)
+    {
+        if (orderViewModel.CurrentOrder == null)
+        {
+            MessageBox.Show("Sipariş bulunamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        var checkoutView = new CheckoutView();
+        var checkoutViewModel = new CheckoutViewModel(
+            _viewModel.CurrentUser, 
+            table, 
+            orderViewModel.CurrentOrder, 
+            orderViewModel.CurrentOrderItems);
+        
+        checkoutViewModel.BackRequested += (s, e) => OnTableSelected(null, table);
+        checkoutViewModel.PaymentCompleted += (s, e) => ShowTables();
+        checkoutViewModel.ReceiptRequested += OnReceiptRequested;
+        
+        checkoutView.DataContext = checkoutViewModel;
+        ContentArea.Content = checkoutView;
+    }
+
+    private void OnReceiptRequested(object? sender, string receipt)
+    {
+        try
+        {
+            var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Receipts");
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var filename = Path.Combine(directory, $"Adisyon_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+            File.WriteAllText(filename, receipt);
+
+            MessageBox.Show(
+                $"Adisyon kaydedildi:\n{filename}", 
+                "Başarılı", 
+                MessageBoxButton.OK, 
+                MessageBoxImage.Information);
+
+            // Open the file with the system's default application for .txt files
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = filename,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Adisyon kaydedilirken hata oluştu: {ex.Message}", 
+                "Hata", 
+                MessageBoxButton.OK, 
+                MessageBoxImage.Error);
+        }
     }
 
     private void ShowProducts()

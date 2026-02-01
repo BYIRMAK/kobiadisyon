@@ -48,10 +48,10 @@
                                 <Style TargetType="Border">
                                     <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Status}" Value="Dolu">
+                                        <DataTrigger Binding="{Binding Table.Status}" Value="Dolu">
                                             <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Status}" Value="Rezerve">
+                                        <DataTrigger Binding="{Binding Table.Status}" Value="Rezerve">
                                             <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -60,20 +60,37 @@
 
                             <Grid>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding TableName}" 
+                                    <TextBlock Text="{Binding Table.TableName}" 
                                                FontSize="24" 
                                                FontWeight="Bold"
                                                Foreground="White"
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,10"/>
                                     
-                                    <TextBlock Text="{Binding Status}" 
+                                    <TextBlock Text="{Binding Table.Status}" 
                                                FontSize="16"
                                                Foreground="White"
                                                HorizontalAlignment="Center"
-                                               Margin="0,0,0,10"/>
+                                               Margin="0,0,0,5"/>
                                     
-                                    <TextBlock Text="{Binding Capacity, StringFormat='Kapasite: {0} kişi'}" 
+                                    <TextBlock Text="{Binding DisplayTotal}" 
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DisplayTotal}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    
+                                    <TextBlock Text="{Binding Table.Capacity, StringFormat='Kapasite: {0} kişi'}" 
                                                FontSize="12"
                                                Foreground="White"
                                                Opacity="0.9"

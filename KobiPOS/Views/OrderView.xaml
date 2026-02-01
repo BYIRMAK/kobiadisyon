@@ -1,0 +1,304 @@
+<UserControl x:Class="KobiPOS.Views.OrderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" 
+                Padding="20" Margin="0,0,0,10">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="{Binding Table.TableName, StringFormat='Sipariş - {0}'}" 
+                               FontSize="24" 
+                               FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Table.Status, StringFormat='Durum: {0}'}" 
+                               FontSize="14"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+                
+                <Button Content="← Geri" 
+                        Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Command="{Binding BackCommand}"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Products -->
+            <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" 
+                    Margin="0,0,5,0" CornerRadius="8" Padding="15">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Categories -->
+                    <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" 
+                                  VerticalScrollBarVisibility="Disabled" Margin="0,0,0,10">
+                        <ItemsControl ItemsSource="{Binding Categories}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding CategoryName}" 
+                                            Command="{Binding DataContext.SelectCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5,0"
+                                            Padding="15,8">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ID}" 
+                                                                 Value="{Binding DataContext.SelectedCategory.ID, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                                        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Products Grid -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Products}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.AddProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Width="120" Height="100"
+                                            Margin="5"
+                                            Style="{StaticResource SuccessButton}"
+                                            Cursor="Hand">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding ProductName}" 
+                                                       FontSize="14" 
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       TextWrapping="Wrap"
+                                                       TextAlignment="Center"
+                                                       Margin="0,0,0,5"/>
+                                            <TextBlock Text="{Binding Price, StringFormat='{}{0:N2} ₺'}" 
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       TextAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Right: Order List -->
+            <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" 
+                    Margin="5,0,0,0" CornerRadius="8" Padding="15">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Order Header -->
+                    <TextBlock Grid.Row="0" Text="Sipariş Listesi" 
+                               FontSize="18" FontWeight="Bold"
+                               Margin="0,0,0,10"/>
+
+                    <!-- Order Items -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding OrderItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" 
+                                            Padding="0,10" Margin="0,5">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Product Name and Remove Button -->
+                                            <Grid Grid.Row="0">
+                                                <TextBlock Text="{Binding ProductName}" 
+                                                           FontWeight="Bold" 
+                                                           FontSize="14"/>
+                                                <Button Content="✕" 
+                                                        Width="25" Height="25"
+                                                        HorizontalAlignment="Right"
+                                                        Background="{StaticResource DangerBrush}"
+                                                        Foreground="White"
+                                                        BorderThickness="0"
+                                                        FontWeight="Bold"
+                                                        Cursor="Hand"
+                                                        Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </Grid>
+
+                                            <!-- Quantity and Price -->
+                                            <Grid Grid.Row="1" Margin="0,5,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Quantity Controls -->
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                    <Button Content="−" 
+                                                            Width="30" Height="30"
+                                                            Background="{StaticResource WarningBrush}"
+                                                            Foreground="White"
+                                                            BorderThickness="0"
+                                                            FontWeight="Bold"
+                                                            FontSize="16"
+                                                            Cursor="Hand"
+                                                            Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"/>
+                                                    <TextBlock Text="{Binding Quantity}" 
+                                                               Width="35"
+                                                               FontSize="14" 
+                                                               FontWeight="Bold"
+                                                               TextAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                    <Button Content="+" 
+                                                            Width="30" Height="30"
+                                                            Background="{StaticResource SuccessBrush}"
+                                                            Foreground="White"
+                                                            BorderThickness="0"
+                                                            FontWeight="Bold"
+                                                            FontSize="16"
+                                                            Cursor="Hand"
+                                                            Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </StackPanel>
+
+                                                <!-- Line Total -->
+                                                <TextBlock Grid.Column="2" 
+                                                           Text="{Binding LineTotal, StringFormat='{}{0:N2} ₺'}" 
+                                                           FontSize="14"
+                                                           FontWeight="Bold"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+
+                                            <!-- Notes -->
+                                            <TextBox Grid.Row="2" 
+                                                     Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,5,0,0"
+                                                     Height="30"
+                                                     VerticalContentAlignment="Center"
+                                                     BorderBrush="#CCCCCC"
+                                                     BorderThickness="1">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox">
+                                                        <Setter Property="Padding" Value="5"/>
+                                                        <Setter Property="FontSize" Value="12"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="Text" Value="">
+                                                                <Setter Property="Background">
+                                                                    <Setter.Value>
+                                                                        <VisualBrush Stretch="None" AlignmentX="Left">
+                                                                            <VisualBrush.Visual>
+                                                                                <TextBlock Text="Not ekle..." 
+                                                                                           Foreground="#999999"
+                                                                                           FontSize="12"
+                                                                                           Margin="5,0,0,0"/>
+                                                                            </VisualBrush.Visual>
+                                                                        </VisualBrush>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Totals -->
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                        <Border BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                            <StackPanel>
+                                <Grid Margin="0,5">
+                                    <TextBlock Text="Ara Toplam:" FontSize="14"/>
+                                    <TextBlock Text="{Binding SubTotal, StringFormat='{}{0:N2} ₺'}" 
+                                               FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <TextBlock Text="KDV (%20):" FontSize="14"/>
+                                    <TextBlock Text="{Binding TaxAmount, StringFormat='{}{0:N2} ₺'}" 
+                                               FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <TextBlock Text="TOPLAM:" FontSize="18" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding TotalAmount, StringFormat='{}{0:N2} ₺'}" 
+                                               FontSize="18" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Footer Buttons -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" 
+                    Content="💾 Kaydet" 
+                    Style="{StaticResource PrimaryButton}"
+                    Height="50"
+                    FontSize="16"
+                    Margin="0,0,5,0"
+                    Command="{Binding SaveOrderCommand}"/>
+
+            <Button Grid.Column="1" 
+                    Content="💳 Hesap Kapat" 
+                    Style="{StaticResource SuccessButton}"
+                    Height="50"
+                    FontSize="16"
+                    Margin="5,0,0,0"
+                    Command="{Binding CloseCheckCommand}"/>
+        </Grid>
+    </Grid>
+</UserControl>
