@@ -1,0 +1,312 @@
+<UserControl x:Class="KobiPOS.Views.ProductManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:KobiPOS.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000"
+             Background="{StaticResource BackgroundBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBrush}" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                           Text="Ürün Yönetimi" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1" 
+                        Content="Yeni Ürün Ekle" 
+                        Style="{StaticResource SuccessButton}"
+                        Command="{Binding AddProductCommand}"
+                        Padding="20,10"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid x:Name="ProductsDataGrid"
+                      ItemsSource="{Binding Products}"
+                      SelectedItem="{Binding SelectedProduct}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      RowHeight="50"
+                      FontSize="14"
+                      Background="White"
+                      BorderBrush="#E0E0E0"
+                      BorderThickness="1">
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Ürün Adı" 
+                                        Binding="{Binding ProductName}" 
+                                        Width="2*" 
+                                        MinWidth="150">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Fiyat" 
+                                        Binding="{Binding Price, StringFormat='{}{0:C2}'}" 
+                                        Width="*"
+                                        MinWidth="100">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Birim" 
+                                        Binding="{Binding Unit}" 
+                                        Width="*"
+                                        MinWidth="80">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Header="Durum" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="Pasif"/>
+                                            <Setter Property="Foreground" Value="#F44336"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Text" Value="Aktif"/>
+                                                    <Setter Property="Foreground" Value="#4CAF50"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="İşlemler" Width="200">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" 
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <Button Content="Düzenle" 
+                                            Style="{StaticResource PrimaryButton}"
+                                            Command="{Binding DataContext.EditProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Margin="5,0"
+                                            Padding="15,8"
+                                            FontSize="12"/>
+                                    <Button Content="Sil" 
+                                            Style="{StaticResource DangerButton}"
+                                            Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Margin="5,0"
+                                            Padding="15,8"
+                                            FontSize="12"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F5F5F5"/>
+                        <Setter Property="Foreground" Value="#333333"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="Padding" Value="10"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="White"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F5F5F5"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#E3F2FD"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </Grid>
+
+        <!-- Edit Dialog -->
+        <Border Grid.Row="0" Grid.RowSpan="2"
+                Background="#80000000"
+                Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                MouseDown="DialogBackground_MouseDown">
+            <Border Width="500" 
+                    Background="White" 
+                    CornerRadius="8"
+                    Padding="30"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Effect="{StaticResource CardShadow}">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{x:Null}"/>
+                </Border.InputBindings>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Dialog Header -->
+                    <TextBlock Grid.Row="0" 
+                               FontSize="20" 
+                               FontWeight="Bold"
+                               Margin="0,0,0,20"
+                               Foreground="#333333">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Ürün Ekle"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EditingProduct.ID, Converter={StaticResource IsGreaterThanZeroConverter}}" Value="True">
+                                        <Setter Property="Text" Value="Ürün Düzenle"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Form Fields -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="400">
+                        <StackPanel>
+                            <!-- Product Name -->
+                            <TextBlock Text="Ürün Adı *" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,5"
+                                       Foreground="#555555"/>
+                            <TextBox Text="{Binding EditingProduct.ProductName, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     FontSize="14"
+                                     Margin="0,0,0,15"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="1"/>
+
+                            <!-- Category -->
+                            <TextBlock Text="Kategori *" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,5"
+                                       Foreground="#555555"/>
+                            <ComboBox ItemsSource="{Binding Categories}"
+                                      SelectedValue="{Binding EditingProduct.CategoryID}"
+                                      DisplayMemberPath="CategoryName"
+                                      SelectedValuePath="ID"
+                                      Padding="10"
+                                      FontSize="14"
+                                      Margin="0,0,0,15"
+                                      BorderBrush="#CCCCCC"
+                                      BorderThickness="1"/>
+
+                            <!-- Price -->
+                            <TextBlock Text="Fiyat *" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,5"
+                                       Foreground="#555555"/>
+                            <TextBox Text="{Binding EditingProduct.Price, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     FontSize="14"
+                                     Margin="0,0,0,15"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="1"/>
+
+                            <!-- Unit -->
+                            <TextBlock Text="Birim" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,5"
+                                       Foreground="#555555"/>
+                            <TextBox Text="{Binding EditingProduct.Unit, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     FontSize="14"
+                                     Margin="0,0,0,15"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="1"/>
+
+                            <!-- Description -->
+                            <TextBlock Text="Açıklama" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,5"
+                                       Foreground="#555555"/>
+                            <TextBox Text="{Binding EditingProduct.Description, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10"
+                                     FontSize="14"
+                                     Height="60"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Margin="0,0,0,15"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="1"/>
+
+                            <!-- Is Active -->
+                            <CheckBox IsChecked="{Binding EditingProduct.IsActive}"
+                                      Content="Aktif"
+                                      FontSize="14"
+                                      FontWeight="SemiBold"
+                                      Margin="0,0,0,20"/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Row="2" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right">
+                        <Button Content="İptal" 
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding CancelEditCommand}"
+                                Padding="25,10"
+                                Margin="0,0,10,0"
+                                Background="#757575"/>
+                        <Button Content="Kaydet" 
+                                Style="{StaticResource SuccessButton}"
+                                Command="{Binding SaveProductCommand}"
+                                Padding="25,10"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>
