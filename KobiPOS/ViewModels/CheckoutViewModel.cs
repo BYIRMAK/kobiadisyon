@@ -86,6 +86,12 @@ namespace KobiPOS.ViewModels
                 if (SetProperty(ref _selectedPaymentType, value))
                 {
                     OnPropertyChanged(nameof(IsCashPayment));
+                    
+                    // Auto-fill cash received with total amount when cash is selected
+                    if (value == PaymentType.Cash)
+                    {
+                        CashReceived = TotalAmount;
+                    }
                 }
             }
         }
@@ -105,10 +111,18 @@ namespace KobiPOS.ViewModels
         public decimal ChangeAmount
         {
             get => _changeAmount;
-            set => SetProperty(ref _changeAmount, value);
+            set
+            {
+                if (SetProperty(ref _changeAmount, value))
+                {
+                    OnPropertyChanged(nameof(HasChange));
+                }
+            }
         }
 
         public bool IsCashPayment => SelectedPaymentType == PaymentType.Cash;
+        
+        public bool HasChange => ChangeAmount > 0;
 
         public ICommand ApplyPercentDiscountCommand { get; }
         public ICommand ApplyAmountDiscountCommand { get; }
@@ -184,7 +198,7 @@ namespace KobiPOS.ViewModels
 
         private void CalculateChange()
         {
-            if (IsCashPayment)
+            if (IsCashPayment && CashReceived > TotalAmount)
             {
                 ChangeAmount = CashReceived - TotalAmount;
             }
@@ -199,7 +213,9 @@ namespace KobiPOS.ViewModels
             if (string.IsNullOrEmpty(SelectedPaymentType))
                 return false;
 
-            if (IsCashPayment && CashReceived < TotalAmount)
+            // For cash payment, allow completion as long as cash received >= total
+            // (or if cash received is 0, it means we're using the default total amount)
+            if (IsCashPayment && CashReceived > 0 && CashReceived < TotalAmount)
                 return false;
 
             return true;
