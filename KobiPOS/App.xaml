@@ -6,6 +6,8 @@
     <Application.Resources>
         <!-- Converters -->
         <helpers:EqualityConverter x:Key="EqualityConverter"/>
+        <helpers:IsGreaterThanZeroConverter x:Key="IsGreaterThanZeroConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         
         <!-- Colors -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
@@ -17,6 +19,10 @@
         <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="#212121"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="#757575"/>
+        <SolidColorBrush x:Key="HeaderBrush" Color="#2196F3"/>
+        
+        <!-- Effects -->
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.3" Color="#000000"/>
         
         <!-- Button Styles -->
         <Style x:Key="PrimaryButton" TargetType="Button">
