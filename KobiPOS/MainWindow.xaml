@@ -94,6 +94,12 @@
                                 Style="{StaticResource SidebarMenuButton}"
                                 Margin="10,5"/>
 
+                        <!-- YENİ: REZERVASYONLAR -->
+                        <Button Content="📅  Rezervasyonlar"
+                                Click="ReservationsButton_Click"
+                                Style="{StaticResource SidebarMenuButton}"
+                                Margin="10,5"/>
+
                         <!-- ÜRÜNLER KALDIRILDI! -->
 
                         <!-- Yönetim Bölümü Başlık -->
