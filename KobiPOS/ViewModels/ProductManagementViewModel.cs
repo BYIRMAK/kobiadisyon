@@ -16,7 +16,9 @@ namespace KobiPOS.ViewModels
         private readonly DatabaseService _databaseService;
         private ObservableCollection<Product> _products;
         private ObservableCollection<Category> _categories;
+        private ObservableCollection<Product> _filteredProducts;
         private Product? _selectedProduct;
+        private Category? _selectedCategory;
         private bool _isEditMode;
         private Product _editingProduct;
 
@@ -25,6 +27,7 @@ namespace KobiPOS.ViewModels
             _databaseService = DatabaseService.Instance;
             _products = new ObservableCollection<Product>();
             _categories = new ObservableCollection<Category>();
+            _filteredProducts = new ObservableCollection<Product>();
             _editingProduct = new Product();
 
             AddProductCommand = new RelayCommand(ExecuteAddProduct);
@@ -34,9 +37,22 @@ namespace KobiPOS.ViewModels
             CancelEditCommand = new RelayCommand(ExecuteCancelEdit);
             SelectImageCommand = new RelayCommand(ExecuteSelectImage);
             RemoveImageCommand = new RelayCommand(ExecuteRemoveImage);
+            FilterCategoryCommand = new RelayCommand(ExecuteFilterCategory);
+            RefreshCommand = new RelayCommand(ExecuteRefresh);
 
             LoadCategories();
             LoadProducts();
+            
+            // Set first category as selected by default
+            if (Categories.Count > 0)
+            {
+                SelectedCategory = Categories[0];
+            }
+            else
+            {
+                // If no categories, show all products
+                FilterProductsByCategory();
+            }
         }
 
         public ObservableCollection<Product> Products
@@ -49,6 +65,24 @@ namespace KobiPOS.ViewModels
         {
             get => _categories;
             set => SetProperty(ref _categories, value);
+        }
+
+        public ObservableCollection<Product> FilteredProducts
+        {
+            get => _filteredProducts;
+            set => SetProperty(ref _filteredProducts, value);
+        }
+
+        public Category? SelectedCategory
+        {
+            get => _selectedCategory;
+            set
+            {
+                if (SetProperty(ref _selectedCategory, value))
+                {
+                    FilterProductsByCategory();
+                }
+            }
         }
 
         public Product? SelectedProduct
@@ -82,6 +116,8 @@ namespace KobiPOS.ViewModels
         public ICommand CancelEditCommand { get; }
         public ICommand SelectImageCommand { get; }
         public ICommand RemoveImageCommand { get; }
+        public ICommand FilterCategoryCommand { get; }
+        public ICommand RefreshCommand { get; }
 
         private void LoadCategories()
         {
@@ -111,6 +147,9 @@ namespace KobiPOS.ViewModels
                 {
                     Products.Add(product);
                 }
+                
+                // Refresh filtered products after loading
+                FilterProductsByCategory();
             }
             catch (Exception ex)
             {
@@ -398,6 +437,43 @@ namespace KobiPOS.ViewModels
             }
 
             return true;
+        }
+
+        private void ExecuteFilterCategory(object? parameter)
+        {
+            if (parameter is Category category)
+            {
+                SelectedCategory = category;
+            }
+        }
+
+        private void ExecuteRefresh(object? parameter)
+        {
+            LoadProducts();
+            FilterProductsByCategory();
+        }
+
+        private void FilterProductsByCategory()
+        {
+            FilteredProducts.Clear();
+
+            if (SelectedCategory == null)
+            {
+                // Show all products
+                foreach (var product in Products)
+                {
+                    FilteredProducts.Add(product);
+                }
+            }
+            else
+            {
+                // Filter by selected category
+                var filtered = Products.Where(p => p.CategoryID == SelectedCategory.ID);
+                foreach (var product in filtered)
+                {
+                    FilteredProducts.Add(product);
+                }
+            }
         }
     }
 }
