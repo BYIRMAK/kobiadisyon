@@ -1,0 +1,87 @@
+<Window x:Class="KobiPOS.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="KobiPOS - Giriş" 
+        Height="500" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Login Form -->
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" 
+                Margin="30" Padding="30" CornerRadius="8">
+            <StackPanel VerticalAlignment="Center">
+                <!-- Logo/Title -->
+                <TextBlock Text="KobiPOS" 
+                           FontSize="32" 
+                           FontWeight="Bold" 
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource PrimaryBrush}"
+                           Margin="0,0,0,10"/>
+                
+                <TextBlock Text="Cafe &amp; Restoran Sistemi" 
+                           FontSize="14" 
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Margin="0,0,0,30"/>
+
+                <!-- Username -->
+                <TextBlock Text="Kullanıcı Adı" 
+                           FontWeight="SemiBold" 
+                           Margin="0,0,0,5"/>
+                <TextBox x:Name="UsernameTextBox" 
+                         Height="40"
+                         Margin="0,0,0,20"/>
+
+                <!-- Password -->
+                <TextBlock Text="Şifre" 
+                           FontWeight="SemiBold" 
+                           Margin="0,0,0,5"/>
+                <PasswordBox x:Name="PasswordBox" 
+                            Height="40"
+                            Margin="0,0,0,10"/>
+
+                <!-- Error Message -->
+                <TextBlock x:Name="ErrorTextBlock" 
+                           Foreground="{StaticResource DangerBrush}"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"
+                           FontSize="12"/>
+
+                <!-- Login Button -->
+                <Button Content="Giriş Yap" 
+                        Style="{StaticResource PrimaryButton}"
+                        Height="45"
+                        FontSize="16"
+                        Click="LoginButton_Click"
+                        Margin="0,0,0,10"/>
+
+                <!-- Exit Button -->
+                <Button Content="Çıkış" 
+                        Style="{StaticResource DangerButton}"
+                        Height="40"
+                        Click="ExitButton_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,20">
+            <TextBlock Text="Kobi Bilişim" 
+                       HorizontalAlignment="Center"
+                       FontWeight="SemiBold"/>
+            <TextBlock Text="0552 165 04 35 | www.kobibilisim.com" 
+                       HorizontalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource TextSecondaryBrush}"/>
+        </StackPanel>
+    </Grid>
+</Window>

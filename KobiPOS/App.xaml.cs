@@ -1,0 +1,20 @@
+﻿using System.Windows;
+using KobiPOS.Views;
+
+namespace KobiPOS;
+
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
+{
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        // Show login window first
+        var loginWindow = new LoginWindow();
+        loginWindow.Show();
+    }
+}
+

@@ -1,0 +1,122 @@
+<UserControl x:Class="KobiPOS.Views.LicenseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" 
+                Padding="20" Margin="0,0,0,10">
+            <TextBlock Text="Lisans Yönetimi" 
+                       FontSize="24" 
+                       FontWeight="Bold"/>
+        </Border>
+
+        <!-- License Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+                <!-- Current License Status -->
+                <Border Background="{StaticResource SurfaceBrush}" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Mevcut Lisans Durumu" 
+                                   FontSize="18" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="{Binding LicenseStatus}" 
+                                   FontFamily="Consolas"
+                                   FontSize="14"
+                                   TextWrapping="Wrap"
+                                   LineHeight="24"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Hardware ID -->
+                <Border Background="{StaticResource SurfaceBrush}" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Hardware ID" 
+                                   FontSize="16" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,10"/>
+                        
+                        <TextBlock Text="Lisans alırken bu ID'yi Kobi Bilişim'e iletiniz:" 
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,10"/>
+                        
+                        <Border Background="{StaticResource BackgroundBrush}" 
+                                Padding="10" 
+                                CornerRadius="4"
+                                Margin="0,0,0,10">
+                            <TextBlock Text="{Binding HardwareId}" 
+                                       FontFamily="Consolas"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"/>
+                        </Border>
+                        
+                        <Button Content="📋 Kopyala" 
+                                Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Left"
+                                Command="{Binding CopyHardwareIdCommand}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- License Activation -->
+                <Border Background="{StaticResource SurfaceBrush}" 
+                        Padding="20" 
+                        CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock Text="Lisans Aktivasyonu" 
+                                   FontSize="16" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Müşteri Adı" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" 
+                                 Height="40"
+                                 Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Lisans Anahtarı" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Format: XXXXX-XXXXX-XXXXX-XXXXX" 
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding LicenseKey, UpdateSourceTrigger=PropertyChanged}" 
+                                 Height="40"
+                                 Margin="0,0,0,15"/>
+
+                        <Button Content="✓ Lisansı Aktive Et" 
+                                Style="{StaticResource SuccessButton}"
+                                Height="45"
+                                Command="{Binding ActivateCommand}"
+                                Margin="0,0,0,10"/>
+
+                        <TextBlock Text="{Binding StatusMessage}" 
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
