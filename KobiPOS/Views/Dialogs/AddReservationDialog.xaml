@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Yeni Rezervasyon Ekle"
         Width="500"
-        Height="650"
+        Height="700"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Background="#ECEFF1">
