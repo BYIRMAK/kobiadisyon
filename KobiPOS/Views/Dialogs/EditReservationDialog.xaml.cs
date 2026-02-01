@@ -113,20 +113,48 @@ namespace KobiPOS.Views.Dialogs
                 return;
             }
             
+            if (TableID == 0)
+            {
+                MessageBox.Show("Lütfen masa seçin!", "Uyarı", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                TableComboBox.Focus();
+                return;
+            }
+            
             try
             {
-                // Saat
+                // SAAT PARSE - GÜVENLİ YOL
+                string timeString = "19:00:00"; // Default
+                
                 var selectedTimeItem = ReservationTimeComboBox.SelectedItem as ComboBoxItem;
-                var timeString = selectedTimeItem?.Tag?.ToString() ?? "19:00:00";
+                if (selectedTimeItem != null && selectedTimeItem.Tag != null)
+                {
+                    timeString = selectedTimeItem.Tag.ToString();
+                }
                 
-                // Kişi sayısı
+                // KİŞİ SAYISI PARSE - GÜVENLİ YOL
+                int guestCount = 4; // Default
+                
                 var selectedGuestItem = GuestCountComboBox.SelectedItem as ComboBoxItem;
-                var guestCount = int.Parse(selectedGuestItem?.Content?.ToString() ?? "4");
+                if (selectedGuestItem != null && selectedGuestItem.Content != null)
+                {
+                    string contentValue = selectedGuestItem.Content.ToString();
+                    if (int.TryParse(contentValue, out int parsed))
+                    {
+                        guestCount = parsed;
+                    }
+                }
                 
-                // Durum
+                // DURUM PARSE - GÜVENLİ YOL
+                string status = "Confirmed"; // Default
+                
                 var selectedStatusItem = StatusComboBox.SelectedItem as ComboBoxItem;
-                var status = selectedStatusItem?.Tag?.ToString() ?? "Confirmed";
+                if (selectedStatusItem != null && selectedStatusItem.Tag != null)
+                {
+                    status = selectedStatusItem.Tag.ToString();
+                }
                 
+                // REZERVASYON GÜNCELLE
                 _reservation.CustomerName = CustomerName.Trim();
                 _reservation.CustomerPhone = CustomerPhone.Trim();
                 _reservation.CustomerEmail = string.IsNullOrWhiteSpace(CustomerEmail) ? null : CustomerEmail.Trim();
@@ -137,19 +165,35 @@ namespace KobiPOS.Views.Dialogs
                 _reservation.Status = status;
                 _reservation.Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim();
                 
+                // VERİTABANINA KAYDET
                 _databaseService.UpdateReservation(_reservation);
                 
                 Success = true;
-                MessageBox.Show("Rezervasyon başarıyla güncellendi!", "Başarılı", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                MessageBox.Show(
+                    $"Rezervasyon başarıyla güncellendi!\n\nMüşteri: {_reservation.CustomerName}\nDurum: {_reservation.StatusText}", 
+                    "Başarılı", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Information);
                 
                 DialogResult = true;
                 Close();
             }
+            catch (FormatException ex)
+            {
+                MessageBox.Show(
+                    $"Veri formatı hatası!\n\nLütfen tüm alanları doğru doldurduğunuzdan emin olun.\n\nDetay: {ex.Message}", 
+                    "Format Hatası", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Rezervasyon güncellenirken hata: {ex.Message}", "Hata", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"Rezervasyon güncellenirken beklenmeyen bir hata oluştu!\n\nHata: {ex.Message}\n\nİç Hata: {ex.InnerException?.Message}", 
+                    "Hata", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
         }
         
