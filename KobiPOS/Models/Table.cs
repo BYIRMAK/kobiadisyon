@@ -9,5 +9,59 @@ namespace KobiPOS.Models
         public int Capacity { get; set; }
         public int? ZoneID { get; set; }
         public bool IsActive { get; set; } = true;
+        
+        // YENİ: Rezervasyon bilgisi
+        public Reservation? CurrentReservation { get; set; }
+        
+        // Masa rengi (güncellenmiş - Rezerve durumu eklendi)
+        public string StatusColor => Status switch
+        {
+            TableStatus.Empty => "#4CAF50",        // Yeşil
+            TableStatus.Occupied => "#F44336",     // Kırmızı
+            TableStatus.Reserved => "#FFC107",     // Sarı (AMBER)
+            _ => "#9E9E9E"             // Gri
+        };
+        
+        // Masa ikonu (güncellenmiş)
+        public string StatusIcon => Status switch
+        {
+            TableStatus.Empty => "✓",
+            TableStatus.Occupied => "●",
+            TableStatus.Reserved => "📅",
+            _ => "?"
+        };
+        
+        // Masa kartında gösterilecek bilgi (güncellenmiş)
+        public string DisplayInfo
+        {
+            get
+            {
+                if (Status == TableStatus.Reserved && CurrentReservation != null)
+                {
+                    // Rezerve masalar için özel görünüm
+                    return $"REZERVE\n{CurrentReservation.FormattedTime}\n{CurrentReservation.CustomerName}";
+                }
+                else if (Status == TableStatus.Occupied)
+                {
+                    return "Dolu";
+                }
+                else
+                {
+                    return "Boş";
+                }
+            }
+        }
+        
+        // Kapasite bilgisi
+        public string CapacityText => $"Kap: {Capacity} kişi";
+        
+        // Rezerve mi?
+        public bool IsReserved => Status == TableStatus.Reserved;
+        
+        // Boş mu?
+        public bool IsAvailable => Status == TableStatus.Empty;
+        
+        // Dolu mu?
+        public bool IsOccupied => Status == TableStatus.Occupied;
     }
 }

@@ -101,11 +101,30 @@ namespace KobiPOS.ViewModels
         private void LoadTables()
         {
             var tables = _db.GetAllTables();
+            var today = DateTime.Today;
+            var now = DateTime.Now;
+            
             Tables.Clear();
             _allTables.Clear();
             
             foreach (var table in tables)
             {
+                // Masanın bugünkü rezervasyonlarını kontrol et
+                var reservations = _db.GetTableReservations(table.ID, today);
+                
+                // Aktif rezervasyon var mı? (30 dakika öncesi - 30 dakika sonrası)
+                var activeReservation = reservations.FirstOrDefault(r => 
+                    r.ReservationDateTime >= now.AddMinutes(-30) && 
+                    r.ReservationDateTime <= now.AddMinutes(30) &&
+                    r.IsActive);
+                
+                // Eğer masa dolu değilse ve aktif rezervasyon varsa
+                if (activeReservation != null && table.Status != TableStatus.Occupied)
+                {
+                    table.Status = TableStatus.Reserved;
+                    table.CurrentReservation = activeReservation;
+                }
+                
                 var orderTotal = _db.GetTableOrderTotal(table.ID);
                 var displayModel = new TableDisplayModel
                 {

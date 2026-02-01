@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using KobiPOS.Models;
 using KobiPOS.Helpers;
 using System.IO;
+using System.Globalization;
 
 namespace KobiPOS.Services
 {
@@ -9,6 +10,11 @@ namespace KobiPOS.Services
     {
         private readonly string _connectionString;
         private static DatabaseService? _instance;
+        
+        // DateTime format constants
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        private const string DateFormat = "yyyy-MM-dd";
+        private const string TimeFormat = @"HH\:mm\:ss";
 
         public static DatabaseService Instance
         {
@@ -158,6 +164,33 @@ namespace KobiPOS.Services
                     Key TEXT PRIMARY KEY,
                     Value TEXT NOT NULL
                 );
+
+                CREATE TABLE IF NOT EXISTS Reservations (
+                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    CustomerName TEXT NOT NULL,
+                    CustomerPhone TEXT NOT NULL,
+                    CustomerEmail TEXT,
+                    GuestCount INTEGER NOT NULL,
+                    ReservationDate TEXT NOT NULL,
+                    ReservationTime TEXT NOT NULL,
+                    TableID INTEGER NOT NULL,
+                    Status TEXT NOT NULL DEFAULT 'Pending',
+                    Notes TEXT,
+                    CreatedBy INTEGER,
+                    CreatedDate TEXT DEFAULT CURRENT_TIMESTAMP,
+                    UpdatedDate TEXT,
+                    FOREIGN KEY (TableID) REFERENCES Tables(ID),
+                    FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
+                );
+                
+                CREATE INDEX IF NOT EXISTS idx_reservations_datetime 
+                ON Reservations(ReservationDate, ReservationTime);
+                
+                CREATE INDEX IF NOT EXISTS idx_reservations_table 
+                ON Reservations(TableID);
+                
+                CREATE INDEX IF NOT EXISTS idx_reservations_status 
+                ON Reservations(Status);
             ";
 
             using var command = new SqliteCommand(createTables, connection);
@@ -1169,5 +1202,270 @@ namespace KobiPOS.Services
             command.Parameters.AddWithValue("@id", payment.ID);
             command.ExecuteNonQuery();
         }
+
+        #region Reservation Management
+
+        /// <summary>
+        /// Yeni rezervasyon ekler
+        /// </summary>
+        public int AddReservation(Reservation reservation)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        INSERT INTO Reservations 
+                        (CustomerName, CustomerPhone, CustomerEmail, GuestCount, 
+                         ReservationDate, ReservationTime, TableID, Status, Notes, CreatedBy)
+                        VALUES 
+                        (@CustomerName, @CustomerPhone, @CustomerEmail, @GuestCount, 
+                         @ReservationDate, @ReservationTime, @TableID, @Status, @Notes, @CreatedBy);
+                        SELECT last_insert_rowid();";
+                    
+                    command.Parameters.AddWithValue("@CustomerName", reservation.CustomerName);
+                    command.Parameters.AddWithValue("@CustomerPhone", reservation.CustomerPhone);
+                    command.Parameters.AddWithValue("@CustomerEmail", reservation.CustomerEmail ?? string.Empty);
+                    command.Parameters.AddWithValue("@GuestCount", reservation.GuestCount);
+                    command.Parameters.AddWithValue("@ReservationDate", reservation.ReservationDate.ToString(DateFormat));
+                    command.Parameters.AddWithValue("@ReservationTime", reservation.ReservationTime.ToString(TimeFormat));
+                    command.Parameters.AddWithValue("@TableID", reservation.TableID);
+                    command.Parameters.AddWithValue("@Status", reservation.Status);
+                    command.Parameters.AddWithValue("@Notes", reservation.Notes ?? string.Empty);
+                    command.Parameters.AddWithValue("@CreatedBy", reservation.CreatedBy);
+                    
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tüm rezervasyonları getirir (opsiyonel tarih filtresi ile)
+        /// </summary>
+        public List<Reservation> GetReservations(DateTime? startDate = null, DateTime? endDate = null, string? status = null)
+        {
+            var reservations = new List<Reservation>();
+            
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        SELECT r.*, t.TableName, z.ZoneName
+                        FROM Reservations r
+                        INNER JOIN Tables t ON r.TableID = t.ID
+                        LEFT JOIN Zones z ON t.ZoneID = z.ID
+                        WHERE 1=1";
+                    
+                    if (startDate.HasValue)
+                    {
+                        command.CommandText += " AND r.ReservationDate >= @StartDate";
+                        command.Parameters.AddWithValue("@StartDate", startDate.Value.ToString(DateFormat));
+                    }
+                    
+                    if (endDate.HasValue)
+                    {
+                        command.CommandText += " AND r.ReservationDate <= @EndDate";
+                        command.Parameters.AddWithValue("@EndDate", endDate.Value.ToString(DateFormat));
+                    }
+                    
+                    if (!string.IsNullOrEmpty(status))
+                    {
+                        command.CommandText += " AND r.Status = @Status";
+                        command.Parameters.AddWithValue("@Status", status);
+                    }
+                    
+                    command.CommandText += " ORDER BY r.ReservationDate, r.ReservationTime";
+                    
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            reservations.Add(new Reservation
+                            {
+                                ID = reader.GetInt32(0),
+                                CustomerName = reader.GetString(1),
+                                CustomerPhone = reader.GetString(2),
+                                CustomerEmail = reader.IsDBNull(3) ? null : reader.GetString(3),
+                                GuestCount = reader.GetInt32(4),
+                                ReservationDate = DateTime.ParseExact(reader.GetString(5), DateFormat, CultureInfo.InvariantCulture),
+                                ReservationTime = TimeSpan.ParseExact(reader.GetString(6), TimeFormat, CultureInfo.InvariantCulture),
+                                TableID = reader.GetInt32(7),
+                                Status = reader.GetString(8),
+                                Notes = reader.IsDBNull(9) ? null : reader.GetString(9),
+                                CreatedBy = reader.GetInt32(10),
+                                CreatedDate = DateTime.ParseExact(reader.GetString(11), DateTimeFormat, CultureInfo.InvariantCulture),
+                                UpdatedDate = reader.IsDBNull(12) ? null : DateTime.ParseExact(reader.GetString(12), DateTimeFormat, CultureInfo.InvariantCulture),
+                                TableName = reader.GetString(13),
+                                SectionName = reader.IsDBNull(14) ? string.Empty : reader.GetString(14)
+                            });
+                        }
+                    }
+                }
+            }
+            
+            return reservations;
+        }
+
+        /// <summary>
+        /// Belirli bir masanın rezervasyonlarını getirir
+        /// </summary>
+        public List<Reservation> GetTableReservations(int tableId, DateTime? date = null)
+        {
+            var targetDate = date ?? DateTime.Today;
+            return GetReservations(targetDate, targetDate)
+                .Where(r => r.TableID == tableId && r.IsActive)
+                .ToList();
+        }
+
+        /// <summary>
+        /// ID'ye göre rezervasyon getirir
+        /// </summary>
+        public Reservation? GetReservationById(int reservationId)
+        {
+            return GetReservations().FirstOrDefault(r => r.ID == reservationId);
+        }
+
+        /// <summary>
+        /// Rezervasyon günceller
+        /// </summary>
+        public void UpdateReservation(Reservation reservation)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        UPDATE Reservations 
+                        SET CustomerName = @CustomerName,
+                            CustomerPhone = @CustomerPhone,
+                            CustomerEmail = @CustomerEmail,
+                            GuestCount = @GuestCount,
+                            ReservationDate = @ReservationDate,
+                            ReservationTime = @ReservationTime,
+                            TableID = @TableID,
+                            Status = @Status,
+                            Notes = @Notes,
+                            UpdatedDate = @UpdatedDate
+                        WHERE ID = @ID";
+                    
+                    command.Parameters.AddWithValue("@ID", reservation.ID);
+                    command.Parameters.AddWithValue("@CustomerName", reservation.CustomerName);
+                    command.Parameters.AddWithValue("@CustomerPhone", reservation.CustomerPhone);
+                    command.Parameters.AddWithValue("@CustomerEmail", reservation.CustomerEmail ?? string.Empty);
+                    command.Parameters.AddWithValue("@GuestCount", reservation.GuestCount);
+                    command.Parameters.AddWithValue("@ReservationDate", reservation.ReservationDate.ToString(DateFormat));
+                    command.Parameters.AddWithValue("@ReservationTime", reservation.ReservationTime.ToString(TimeFormat));
+                    command.Parameters.AddWithValue("@TableID", reservation.TableID);
+                    command.Parameters.AddWithValue("@Status", reservation.Status);
+                    command.Parameters.AddWithValue("@Notes", reservation.Notes ?? string.Empty);
+                    command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now.ToString(DateTimeFormat));
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Rezervasyon durumunu değiştirir
+        /// </summary>
+        public void UpdateReservationStatus(int reservationId, string newStatus)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        UPDATE Reservations 
+                        SET Status = @Status, UpdatedDate = @UpdatedDate
+                        WHERE ID = @ID";
+                    
+                    command.Parameters.AddWithValue("@ID", reservationId);
+                    command.Parameters.AddWithValue("@Status", newStatus);
+                    command.Parameters.AddWithValue("@UpdatedDate", DateTime.Now.ToString(DateTimeFormat));
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Rezervasyon iptal eder
+        /// </summary>
+        public void CancelReservation(int reservationId)
+        {
+            UpdateReservationStatus(reservationId, ReservationStatus.Cancelled);
+        }
+
+        /// <summary>
+        /// Rezervasyon onaylar
+        /// </summary>
+        public void ConfirmReservation(int reservationId)
+        {
+            UpdateReservationStatus(reservationId, ReservationStatus.Confirmed);
+        }
+
+        /// <summary>
+        /// Rezervasyon tamamlar
+        /// </summary>
+        public void CompleteReservation(int reservationId)
+        {
+            UpdateReservationStatus(reservationId, ReservationStatus.Completed);
+        }
+
+        /// <summary>
+        /// Rezervasyon siler (kalıcı silme)
+        /// </summary>
+        public void DeleteReservation(int reservationId)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM Reservations WHERE ID = @ID";
+                    command.Parameters.AddWithValue("@ID", reservationId);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Bugünkü aktif rezervasyonları getirir (uyarı sistemi için)
+        /// </summary>
+        public List<Reservation> GetTodayActiveReservations()
+        {
+            var today = DateTime.Today;
+            return GetReservations(today, today, null)
+                .Where(r => r.IsActive && !r.IsPast)
+                .OrderBy(r => r.ReservationTime)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Yaklaşan rezervasyonları getirir (60 dakika içinde)
+        /// </summary>
+        public List<Reservation> GetUpcomingReservations()
+        {
+            return GetTodayActiveReservations()
+                .Where(r => r.IsUpcoming)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Çok yakın rezervasyonları getirir (15 dakika içinde) - Uyarı için
+        /// </summary>
+        public List<Reservation> GetSoonReservations()
+        {
+            return GetTodayActiveReservations()
+                .Where(r => r.IsSoon)
+                .ToList();
+        }
+
+        #endregion
     }
 }
