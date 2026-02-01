@@ -14,5 +14,7 @@ namespace KobiPOS.Models
         public bool StockTracking { get; set; }
         public int CurrentStock { get; set; }
         public bool IsActive { get; set; } = true;
+        
+        public bool HasImage => !string.IsNullOrEmpty(ImagePath);
     }
 }

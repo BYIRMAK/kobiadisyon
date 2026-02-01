@@ -9,6 +9,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -28,9 +29,76 @@
             </Grid>
         </Border>
 
+        <!-- Zone Tabs -->
+        <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" 
+                Padding="10,0" Margin="0,0,0,10">
+            <TabControl x:Name="ZoneTabControl" 
+                        ItemsSource="{Binding Zones}"
+                        SelectedItem="{Binding SelectedZone}"
+                        BorderThickness="0"
+                        Background="Transparent">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="Border" 
+                                            Background="Transparent"
+                                            BorderThickness="0,0,0,3"
+                                            BorderBrush="Transparent"
+                                            Padding="15,10"
+                                            Margin="0,0,5,0"
+                                            Cursor="Hand">
+                                        <ContentPresenter ContentSource="Header"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Zone color indicator -->
+                            <Rectangle Width="15" Height="15" 
+                                      Fill="{Binding ColorCode}" 
+                                      Margin="0,0,8,0"
+                                      RadiusX="2" RadiusY="2"/>
+                            <!-- Zone name -->
+                            <TextBlock Text="{Binding ZoneName}" 
+                                      FontSize="14" 
+                                      FontWeight="SemiBold"
+                                      VerticalAlignment="Center"/>
+                            <!-- Table count -->
+                            <TextBlock Text="{Binding TableCount, StringFormat=' ({0})'}" 
+                                      FontSize="12" 
+                                      Foreground="Gray" 
+                                      Margin="3,0,0,0"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <!-- Empty content template since we show filtered tables below -->
+                        <Grid/>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+        </Border>
+
         <!-- Tables Grid -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Tables}">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding FilteredTables}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" />

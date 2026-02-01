@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.IO;
+using Microsoft.Win32;
 
 namespace KobiPOS.ViewModels
 {
@@ -30,6 +32,8 @@ namespace KobiPOS.ViewModels
             DeleteProductCommand = new RelayCommand(ExecuteDeleteProduct, CanEditOrDelete);
             SaveProductCommand = new RelayCommand(ExecuteSaveProduct, CanSaveProduct);
             CancelEditCommand = new RelayCommand(ExecuteCancelEdit);
+            SelectImageCommand = new RelayCommand(ExecuteSelectImage);
+            RemoveImageCommand = new RelayCommand(ExecuteRemoveImage);
 
             LoadCategories();
             LoadProducts();
@@ -76,6 +80,8 @@ namespace KobiPOS.ViewModels
         public ICommand DeleteProductCommand { get; }
         public ICommand SaveProductCommand { get; }
         public ICommand CancelEditCommand { get; }
+        public ICommand SelectImageCommand { get; }
+        public ICommand RemoveImageCommand { get; }
 
         private void LoadCategories()
         {
@@ -183,6 +189,13 @@ namespace KobiPOS.ViewModels
                 if (EditingProduct.ID == 0)
                 {
                     _databaseService.AddProduct(EditingProduct);
+                    
+                    // If there's a temp image, rename it to use the actual product ID
+                    if (!string.IsNullOrEmpty(EditingProduct.ImagePath) && EditingProduct.ImagePath.Contains("temp_"))
+                    {
+                        UpdateTempImagePath(EditingProduct);
+                    }
+                    
                     MessageBox.Show("Ürün başarıyla eklendi.", "Başarılı",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -202,11 +215,131 @@ namespace KobiPOS.ViewModels
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        
+        private void UpdateTempImagePath(Product product)
+        {
+            try
+            {
+                string imagesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "Products");
+                string oldFileName = Path.GetFileName(product.ImagePath);
+                string oldPath = Path.Combine(imagesFolder, oldFileName);
+                
+                if (File.Exists(oldPath))
+                {
+                    string newFileName = $"{product.ID}.jpg";
+                    string newPath = Path.Combine(imagesFolder, newFileName);
+                    
+                    // Delete old file if it exists
+                    if (File.Exists(newPath))
+                    {
+                        File.Delete(newPath);
+                    }
+                    
+                    File.Move(oldPath, newPath);
+                    product.ImagePath = $"/Images/Products/{newFileName}";
+                    _databaseService.UpdateProduct(product);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail - the temp image will remain
+                System.Diagnostics.Debug.WriteLine($"Failed to update temp image path: {ex.Message}");
+            }
+        }
 
         private void ExecuteCancelEdit(object? parameter)
         {
             IsEditMode = false;
             EditingProduct = new Product();
+        }
+
+        private void ExecuteSelectImage(object? parameter)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "Ürün Görseli Seç",
+                Filter = "Resim Dosyaları|*.jpg;*.jpeg;*.png;*.bmp|Tüm Dosyalar|*.*",
+                FilterIndex = 1
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedFile = openFileDialog.FileName;
+
+                // File size check (2 MB = 2,097,152 bytes)
+                var fileInfo = new FileInfo(selectedFile);
+                if (fileInfo.Length > 2097152)
+                {
+                    MessageBox.Show("Resim boyutu 2 MB'dan büyük olamaz!", "Uyarı", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Save image and get path
+                string imagePath = SaveProductImage(selectedFile, EditingProduct.ID);
+
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    EditingProduct.ImagePath = imagePath;
+                    OnPropertyChanged(nameof(EditingProduct));
+                    MessageBox.Show("Resim başarıyla yüklendi!", "Başarılı", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+        }
+
+        private void ExecuteRemoveImage(object? parameter)
+        {
+            if (MessageBox.Show("Ürün görselini kaldırmak istediğinize emin misiniz?",
+                "Onay", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                EditingProduct.ImagePath = string.Empty;
+                OnPropertyChanged(nameof(EditingProduct));
+                MessageBox.Show("Resim kaldırıldı!", "Başarılı", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private string SaveProductImage(string sourceFilePath, int productId)
+        {
+            try
+            {
+                // Create Images/Products folder
+                string imagesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "Products");
+                Directory.CreateDirectory(imagesFolder);
+
+                // Always use .jpg extension since we're saving as JPEG
+                string fileName = productId > 0 
+                    ? $"{productId}.jpg" 
+                    : $"temp_{DateTime.Now.Ticks}.jpg";
+                string destinationPath = Path.Combine(imagesFolder, fileName);
+
+                // Resize and save image (300x300)
+                ResizeAndSaveImage(sourceFilePath, destinationPath, 300, 300);
+
+                // Return relative path
+                return $"/Images/Products/{fileName}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Resim kaydedilirken hata: {ex.Message}", "Hata", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return string.Empty;
+            }
+        }
+
+        private void ResizeAndSaveImage(string sourcePath, string destinationPath, int width, int height)
+        {
+            using (var image = System.Drawing.Image.FromFile(sourcePath))
+            using (var resized = new System.Drawing.Bitmap(width, height))
+            {
+                using (var graphics = System.Drawing.Graphics.FromImage(resized))
+                {
+                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    graphics.DrawImage(image, 0, 0, width, height);
+                }
+                resized.Save(destinationPath, System.Drawing.Imaging.ImageFormat.Jpeg);
+            }
         }
 
         private bool CanEditOrDelete(object? parameter)
