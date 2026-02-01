@@ -178,32 +178,38 @@ namespace KobiPOS.ViewModels
 
         private void ExecuteEditProduct(object? parameter)
         {
-            if (SelectedProduct == null) return;
+            // Parameter olarak gelen Product nesnesini kullan
+            var product = parameter as Product;
+            if (product == null) return;
+
+            SelectedProduct = product; // Seçili ürünü ayarla
 
             EditingProduct = new Product
             {
-                ID = SelectedProduct.ID,
-                ProductName = SelectedProduct.ProductName,
-                CategoryID = SelectedProduct.CategoryID,
-                Price = SelectedProduct.Price,
-                StockQuantity = SelectedProduct.StockQuantity,
-                Barcode = SelectedProduct.Barcode,
-                ImagePath = SelectedProduct.ImagePath,
-                Description = SelectedProduct.Description,
-                Unit = SelectedProduct.Unit,
-                StockTracking = SelectedProduct.StockTracking,
-                CurrentStock = SelectedProduct.CurrentStock,
-                IsActive = SelectedProduct.IsActive
+                ID = product.ID,
+                ProductName = product.ProductName,
+                CategoryID = product.CategoryID,
+                Price = product.Price,
+                StockQuantity = product.StockQuantity,
+                Barcode = product.Barcode,
+                ImagePath = product.ImagePath,
+                Description = product.Description,
+                Unit = product.Unit,
+                StockTracking = product.StockTracking,
+                CurrentStock = product.CurrentStock,
+                IsActive = product.IsActive
             };
             IsEditMode = true;
         }
 
         private void ExecuteDeleteProduct(object? parameter)
         {
-            if (SelectedProduct == null) return;
+            // Parameter olarak gelen Product nesnesini kullan
+            var product = parameter as Product;
+            if (product == null) return;
 
             var result = MessageBox.Show(
-                $"'{SelectedProduct.ProductName}' ürününü silmek istediğinizden emin misiniz?",
+                $"'{product.ProductName}' ürününü silmek istediğinizden emin misiniz?",
                 "Ürün Sil",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -212,8 +218,9 @@ namespace KobiPOS.ViewModels
 
             try
             {
-                _databaseService.DeleteProduct(SelectedProduct.ID);
+                _databaseService.DeleteProduct(product.ID);
                 LoadProducts();
+                FilterProductsByCategory(); // Filtreyi yenile
                 MessageBox.Show("Ürün başarıyla silindi.", "Başarılı",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -252,6 +259,7 @@ namespace KobiPOS.ViewModels
 
                 IsEditMode = false;
                 LoadProducts();
+                FilterProductsByCategory(); // Filtreyi güncelle
             }
             catch (Exception ex)
             {
@@ -408,7 +416,7 @@ namespace KobiPOS.ViewModels
 
         private bool CanEditOrDelete(object? parameter)
         {
-            return SelectedProduct != null;
+            return parameter is Product;
         }
 
         private bool CanSaveProduct(object? parameter)
