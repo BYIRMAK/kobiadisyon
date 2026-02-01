@@ -79,6 +79,40 @@
                             Padding="20,10"
                             Click="ProductsButton_Click"/>
                     
+                    <!-- Management Section Separator -->
+                    <Border Height="1" Background="#E0E0E0" Margin="10,15"/>
+                    <TextBlock Text="YÖNETIM ALANI" 
+                               FontSize="11" 
+                               FontWeight="Bold" 
+                               Foreground="#999999"
+                               Margin="20,5,10,5"/>
+                    
+                    <Button Content="📊 Ürün Yönetimi" 
+                            Style="{StaticResource PrimaryButton}"
+                            Height="50" 
+                            Margin="10,5"
+                            HorizontalContentAlignment="Left"
+                            Padding="20,10"
+                            Click="ProductManagementButton_Click"/>
+                    
+                    <Button Content="🏢 Masa Yönetimi" 
+                            Style="{StaticResource PrimaryButton}"
+                            Height="50" 
+                            Margin="10,5"
+                            HorizontalContentAlignment="Left"
+                            Padding="20,10"
+                            Click="TableManagementButton_Click"/>
+                    
+                    <Button Content="📍 Bölge Yönetimi" 
+                            Style="{StaticResource PrimaryButton}"
+                            Height="50" 
+                            Margin="10,5"
+                            HorizontalContentAlignment="Left"
+                            Padding="20,10"
+                            Click="ZoneManagementButton_Click"/>
+                    
+                    <Border Height="1" Background="#E0E0E0" Margin="10,15"/>
+                    
                     <Button Content="📊 Raporlar" 
                             Style="{StaticResource PrimaryButton}"
                             Height="50" 

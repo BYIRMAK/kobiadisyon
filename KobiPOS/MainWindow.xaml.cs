@@ -57,6 +57,21 @@ public partial class MainWindow : Window
         ShowSupport();
     }
 
+    private void ProductManagementButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowProductManagement();
+    }
+
+    private void TableManagementButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowTableManagement();
+    }
+
+    private void ZoneManagementButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowZoneManagement();
+    }
+
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
@@ -182,6 +197,27 @@ public partial class MainWindow : Window
         var supportView = new SupportView();
         supportView.DataContext = new SupportViewModel();
         ContentArea.Content = supportView;
+    }
+
+    private void ShowProductManagement()
+    {
+        var productManagementView = new ProductManagementView();
+        productManagementView.DataContext = new ProductManagementViewModel();
+        ContentArea.Content = productManagementView;
+    }
+
+    private void ShowTableManagement()
+    {
+        var tableManagementView = new TableManagementView();
+        tableManagementView.DataContext = new TableManagementViewModel();
+        ContentArea.Content = tableManagementView;
+    }
+
+    private void ShowZoneManagement()
+    {
+        var zoneManagementView = new ZoneManagementView();
+        zoneManagementView.DataContext = new ZoneManagementViewModel();
+        ContentArea.Content = zoneManagementView;
     }
 
     private void OnLogoutRequested(object? sender, EventArgs e)
