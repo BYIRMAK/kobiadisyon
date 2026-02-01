@@ -139,7 +139,7 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK, 
                 MessageBoxImage.Information);
 
-            // Open the file with default text editor
+            // Open the file with the system's default application for .txt files
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = filename,

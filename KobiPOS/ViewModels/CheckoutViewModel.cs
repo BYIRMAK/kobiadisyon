@@ -163,7 +163,7 @@ namespace KobiPOS.ViewModels
             if (DiscountAmount >= 0 && DiscountAmount <= GrossTotal)
             {
                 DiscountPercent = GrossTotal > 0 ? (DiscountAmount / GrossTotal) * 100 : 0;
-                // Note: CalculateTotal is called automatically through DiscountAmount setter
+                // Note: CalculateTotal is called automatically when DiscountAmount setter triggers property change notification
             }
             else
             {

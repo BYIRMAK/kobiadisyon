@@ -465,9 +465,10 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(
-                $"SELECT * FROM Orders WHERE TableID = @tableId AND Status != '{OrderStatus.Served}' ORDER BY OrderDate DESC LIMIT 1",
+                "SELECT * FROM Orders WHERE TableID = @tableId AND Status != @servedStatus ORDER BY OrderDate DESC LIMIT 1",
                 connection);
             command.Parameters.AddWithValue("@tableId", tableId);
+            command.Parameters.AddWithValue("@servedStatus", OrderStatus.Served);
 
             using var reader = command.ExecuteReader();
             if (reader.Read())
@@ -571,9 +572,10 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(
-                $"SELECT COALESCE(SUM(TotalAmount), 0) FROM Orders WHERE TableID = @tableId AND Status != '{OrderStatus.Served}'",
+                "SELECT COALESCE(SUM(TotalAmount), 0) FROM Orders WHERE TableID = @tableId AND Status != @servedStatus",
                 connection);
             command.Parameters.AddWithValue("@tableId", tableId);
+            command.Parameters.AddWithValue("@servedStatus", OrderStatus.Served);
 
             var result = command.ExecuteScalar();
             return result != null ? Convert.ToDecimal(result) : 0;

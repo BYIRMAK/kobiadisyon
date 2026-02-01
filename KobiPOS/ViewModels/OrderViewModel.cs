@@ -240,11 +240,68 @@ namespace KobiPOS.ViewModels
                 return;
             }
 
+            // Create new order
+            if (_currentOrder == null)
+            {
+                _currentOrder = new Order
+                {
+                    TableID = _table.ID,
+                    OrderDate = DateTime.Now,
+                    UserID = _currentUser.ID,
+                    SubTotal = SubTotal,
+                    TaxAmount = TaxAmount,
+                    TotalAmount = TotalAmount,
+                    Status = OrderStatus.Pending
+                };
+                _currentOrder.ID = _db.CreateOrder(_currentOrder);
+            }
+            else
+            {
+                // Update existing order
+                _currentOrder.SubTotal = SubTotal;
+                _currentOrder.TaxAmount = TaxAmount;
+                _currentOrder.TotalAmount = TotalAmount;
+                _db.UpdateOrder(_currentOrder);
+                _db.DeleteOrderDetails(_currentOrder.ID);
+            }
+
+            // Add order details
+            foreach (var item in OrderItems)
+            {
+                var detail = new OrderDetail
+                {
+                    OrderID = _currentOrder.ID,
+                    ProductID = item.ProductID,
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    LineTotal = item.LineTotal,
+                    Notes = item.Notes
+                };
+                _db.AddOrderDetail(detail);
+            }
+
+            // Update table status
+            _db.UpdateTableStatus(_table.ID, TableStatus.Occupied);
+
+            MessageBox.Show("Sipariş kaydedildi.", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
+            OrderSaved?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ExecuteCloseCheck()
+        {
+            if (OrderItems.Count == 0)
+            {
+                MessageBox.Show("Sipariş boş olamaz!", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Save the order first
             try
             {
+                // Save without showing success message or navigating back
                 if (_currentOrder == null)
                 {
-                    // Create new order
                     _currentOrder = new Order
                     {
                         TableID = _table.ID,
@@ -259,7 +316,6 @@ namespace KobiPOS.ViewModels
                 }
                 else
                 {
-                    // Update existing order
                     _currentOrder.SubTotal = SubTotal;
                     _currentOrder.TaxAmount = TaxAmount;
                     _currentOrder.TotalAmount = TotalAmount;
@@ -267,7 +323,6 @@ namespace KobiPOS.ViewModels
                     _db.DeleteOrderDetails(_currentOrder.ID);
                 }
 
-                // Add order details
                 foreach (var item in OrderItems)
                 {
                     var detail = new OrderDetail
@@ -283,36 +338,13 @@ namespace KobiPOS.ViewModels
                     _db.AddOrderDetail(detail);
                 }
 
-                // Update table status
                 _db.UpdateTableStatus(_table.ID, TableStatus.Occupied);
 
-                MessageBox.Show("Sipariş kaydedildi.", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
-                OrderSaved?.Invoke(this, EventArgs.Empty);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Sipariş kaydedilirken hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ExecuteCloseCheck()
-        {
-            if (OrderItems.Count == 0)
-            {
-                MessageBox.Show("Sipariş boş olamaz!", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // First save the order - if save is successful, then navigate to checkout
-            try
-            {
-                ExecuteSaveOrder();
-                // Only proceed to checkout if save was successful (no exception thrown)
+                // Only navigate to checkout if save was successful
                 CheckoutRequested?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
-                // Save failed, don't navigate to checkout
                 MessageBox.Show($"Sipariş kaydedilemedi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
