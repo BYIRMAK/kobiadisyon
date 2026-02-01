@@ -1,0 +1,55 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Database files (optional - remove if you want to track the DB)
+*.db
+*.db-shm
+*.db-wal
+
+# Publish profiles
+*.pubxml
+*.publishproj
+
+# Temporary files
+*.tmp
+*.temp
+*_wpftmp.csproj
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Build output
+publish/
