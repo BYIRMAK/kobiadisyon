@@ -4,14 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:KobiPOS.Views"
-             xmlns:viewmodels="clr-namespace:KobiPOS.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000"
              Background="{StaticResource BackgroundBrush}">
-    
-    <UserControl.DataContext>
-        <viewmodels:ProductManagementViewModel />
-    </UserControl.DataContext>
 
     <Grid>
         <Grid.RowDefinitions>

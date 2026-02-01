@@ -119,7 +119,9 @@ namespace KobiPOS.ViewModels
             {
                 IsActive = true,
                 Unit = "Adet",
-                StockTracking = false
+                StockTracking = false,
+                StockQuantity = 0,
+                CurrentStock = 0
             };
             IsEditMode = true;
         }
