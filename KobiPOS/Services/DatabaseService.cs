@@ -251,27 +251,42 @@ namespace KobiPOS.Services
 
             if (!hasAddedTime)
             {
-                new SqliteCommand("ALTER TABLE OrderDetails ADD COLUMN AddedTime TEXT", connection).ExecuteNonQuery();
+                using (var command = new SqliteCommand("ALTER TABLE OrderDetails ADD COLUMN AddedTime TEXT", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
                 
                 // Mevcut kayıtlar için varsayılan değer ata (Order.OrderDate kullan)
-                new SqliteCommand(@"
+                using (var command = new SqliteCommand(@"
                     UPDATE OrderDetails 
                     SET AddedTime = (SELECT OrderDate FROM Orders WHERE Orders.ID = OrderDetails.OrderID)
-                    WHERE AddedTime IS NULL", connection).ExecuteNonQuery();
+                    WHERE AddedTime IS NULL", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
             
             // Create index for OrderDetails AddedTime for better query performance (after column exists)
-            new SqliteCommand("CREATE INDEX IF NOT EXISTS idx_orderdetails_addedtime ON OrderDetails(AddedTime)", connection).ExecuteNonQuery();
+            using (var command = new SqliteCommand("CREATE INDEX IF NOT EXISTS idx_orderdetails_addedtime ON OrderDetails(AddedTime)", connection))
+            {
+                command.ExecuteNonQuery();
+            }
             
             if (!hasAddedBy)
             {
-                new SqliteCommand("ALTER TABLE OrderDetails ADD COLUMN AddedBy TEXT", connection).ExecuteNonQuery();
+                using (var command = new SqliteCommand("ALTER TABLE OrderDetails ADD COLUMN AddedBy TEXT", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
                 
                 // Mevcut kayıtlar için varsayılan değer ata (Order.UserID'den kullanıcı adını al)
-                new SqliteCommand(@"
+                using (var command = new SqliteCommand(@"
                     UPDATE OrderDetails 
                     SET AddedBy = (SELECT FullName FROM Users WHERE Users.ID = (SELECT UserID FROM Orders WHERE Orders.ID = OrderDetails.OrderID))
-                    WHERE AddedBy IS NULL OR AddedBy = ''", connection).ExecuteNonQuery();
+                    WHERE AddedBy IS NULL OR AddedBy = ''", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
         }
 
