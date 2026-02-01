@@ -49,7 +49,9 @@ namespace KobiPOS.ViewModels
         
         private void LoadReservations()
         {
-            var reservations = _databaseService.GetReservations(FilterDate, FilterDate);
+            // Get reservations for the selected date only (using same date for start and end to filter single day)
+            var selectedDate = FilterDate.Date;
+            var reservations = _databaseService.GetReservations(selectedDate, selectedDate);
             Reservations.Clear();
             foreach (var res in reservations)
             {
