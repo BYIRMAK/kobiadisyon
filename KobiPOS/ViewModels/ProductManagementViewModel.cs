@@ -189,6 +189,13 @@ namespace KobiPOS.ViewModels
                 if (EditingProduct.ID == 0)
                 {
                     _databaseService.AddProduct(EditingProduct);
+                    
+                    // If there's a temp image, rename it to use the actual product ID
+                    if (!string.IsNullOrEmpty(EditingProduct.ImagePath) && EditingProduct.ImagePath.Contains("temp_"))
+                    {
+                        UpdateTempImagePath(EditingProduct);
+                    }
+                    
                     MessageBox.Show("Ürün başarıyla eklendi.", "Başarılı",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -206,6 +213,37 @@ namespace KobiPOS.ViewModels
             {
                 MessageBox.Show($"Ürün kaydedilirken hata oluştu: {ex.Message}", "Hata",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        private void UpdateTempImagePath(Product product)
+        {
+            try
+            {
+                string imagesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "Products");
+                string oldFileName = Path.GetFileName(product.ImagePath);
+                string oldPath = Path.Combine(imagesFolder, oldFileName);
+                
+                if (File.Exists(oldPath))
+                {
+                    string newFileName = $"{product.ID}.jpg";
+                    string newPath = Path.Combine(imagesFolder, newFileName);
+                    
+                    // Delete old file if it exists
+                    if (File.Exists(newPath))
+                    {
+                        File.Delete(newPath);
+                    }
+                    
+                    File.Move(oldPath, newPath);
+                    product.ImagePath = $"/Images/Products/{newFileName}";
+                    _databaseService.UpdateProduct(product);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail - the temp image will remain
+                System.Diagnostics.Debug.WriteLine($"Failed to update temp image path: {ex.Message}");
             }
         }
 
@@ -270,13 +308,10 @@ namespace KobiPOS.ViewModels
                 string imagesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "Products");
                 Directory.CreateDirectory(imagesFolder);
 
-                // File extension
-                string extension = Path.GetExtension(sourceFilePath);
-
-                // Generate unique filename with timestamp to avoid conflicts
+                // Always use .jpg extension since we're saving as JPEG
                 string fileName = productId > 0 
-                    ? $"{productId}{extension}" 
-                    : $"temp_{DateTime.Now.Ticks}{extension}";
+                    ? $"{productId}.jpg" 
+                    : $"temp_{DateTime.Now.Ticks}.jpg";
                 string destinationPath = Path.Combine(imagesFolder, fileName);
 
                 // Resize and save image (300x300)
@@ -296,8 +331,8 @@ namespace KobiPOS.ViewModels
         private void ResizeAndSaveImage(string sourcePath, string destinationPath, int width, int height)
         {
             using (var image = System.Drawing.Image.FromFile(sourcePath))
+            using (var resized = new System.Drawing.Bitmap(width, height))
             {
-                var resized = new System.Drawing.Bitmap(width, height);
                 using (var graphics = System.Drawing.Graphics.FromImage(resized))
                 {
                     graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;

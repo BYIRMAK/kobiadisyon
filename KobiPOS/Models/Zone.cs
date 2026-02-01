@@ -4,6 +4,8 @@ namespace KobiPOS.Models
 {
     public class Zone
     {
+        private int? _tableCount;
+        
         public int ID { get; set; }
         public string ZoneName { get; set; } = string.Empty;
         public string ColorCode { get; set; } = "#2196F3";
@@ -14,8 +16,12 @@ namespace KobiPOS.Models
         {
             get
             {
-                var db = DatabaseService.Instance;
-                return db.GetTablesByZone(this.ID).Count;
+                if (_tableCount == null)
+                {
+                    var db = DatabaseService.Instance;
+                    _tableCount = db.GetTablesByZone(this.ID).Count;
+                }
+                return _tableCount.Value;
             }
         }
     }

@@ -213,9 +213,8 @@ namespace KobiPOS.ViewModels
             if (string.IsNullOrEmpty(SelectedPaymentType))
                 return false;
 
-            // For cash payment, allow completion as long as cash received >= total
-            // (or if cash received is 0, it means we're using the default total amount)
-            if (IsCashPayment && CashReceived > 0 && CashReceived < TotalAmount)
+            // For cash payment, ensure cash received is at least the total amount
+            if (IsCashPayment && CashReceived < TotalAmount)
                 return false;
 
             return true;
