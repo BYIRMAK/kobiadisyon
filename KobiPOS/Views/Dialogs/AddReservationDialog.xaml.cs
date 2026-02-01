@@ -112,6 +112,14 @@ namespace KobiPOS.Views.Dialogs
                     }
                 }
                 
+                // TIMESPAN PARSE - GÜVENLİ YOL
+                TimeSpan reservationTime = TimeSpan.FromHours(19); // Default 19:00
+                if (!TimeSpan.TryParse(timeString, out reservationTime))
+                {
+                    // Eğer parse başarısız olursa default 19:00 kullan
+                    reservationTime = TimeSpan.FromHours(19);
+                }
+                
                 // REZERVASYON NESNESİ OLUŞTUR
                 var reservation = new Reservation
                 {
@@ -120,7 +128,7 @@ namespace KobiPOS.Views.Dialogs
                     CustomerEmail = string.IsNullOrWhiteSpace(CustomerEmail) ? null : CustomerEmail.Trim(),
                     GuestCount = guestCount,
                     ReservationDate = ReservationDate,
-                    ReservationTime = TimeSpan.Parse(timeString),
+                    ReservationTime = reservationTime,
                     TableID = SelectedTable.ID,
                     Status = "Confirmed",
                     Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim(),
