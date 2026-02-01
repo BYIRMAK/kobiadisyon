@@ -92,6 +92,9 @@ namespace KobiPOS.ViewModels
                     {
                         CashReceived = TotalAmount;
                     }
+                    
+                    // Re-evaluate the CompletePaymentCommand's CanExecute
+                    CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
@@ -104,6 +107,9 @@ namespace KobiPOS.ViewModels
                 if (SetProperty(ref _cashReceived, value))
                 {
                     CalculateChange();
+                    
+                    // Re-evaluate the CompletePaymentCommand's CanExecute
+                    CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
