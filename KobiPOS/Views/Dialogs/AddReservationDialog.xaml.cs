@@ -113,10 +113,10 @@ namespace KobiPOS.Views.Dialogs
                 }
                 
                 // TIMESPAN PARSE - GÜVENLİ YOL
-                TimeSpan reservationTime = TimeSpan.FromHours(19); // Default 19:00
+                TimeSpan reservationTime;
                 if (!TimeSpan.TryParse(timeString, out reservationTime))
                 {
-                    // Eğer parse başarısız olursa default 19:00 kullan
+                    // Default 19:00
                     reservationTime = TimeSpan.FromHours(19);
                 }
                 
