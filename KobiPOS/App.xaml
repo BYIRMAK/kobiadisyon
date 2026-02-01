@@ -7,6 +7,7 @@
         <!-- Converters -->
         <helpers:EqualityConverter x:Key="EqualityConverter"/>
         <helpers:IsGreaterThanZeroConverter x:Key="IsGreaterThanZeroConverter"/>
+        <helpers:PathToImageSourceConverter x:Key="PathToImageSourceConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         
         <!-- Colors -->
