@@ -1,0 +1,111 @@
+<Window x:Class="KobiPOS.Views.OrderHistoryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="📜 Sipariş Geçmişi"
+        Width="600" Height="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Başlık -->
+        <TextBlock Grid.Row="0" 
+                   Text="{Binding Title}"
+                   FontSize="20" 
+                   FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+        
+        <!-- Sipariş Listesi -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding OrderHistory}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#F9F9F9" 
+                                BorderBrush="#E0E0E0" 
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="15"
+                                Margin="0,5">
+                            <StackPanel>
+                                <!-- Üst satır: Saat + Ürün + Tutar -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0" 
+                                               Text="{Binding DetailedTime}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#1976D2"
+                                               Margin="0,0,15,0"/>
+                                    
+                                    <TextBlock Grid.Column="1" 
+                                               FontSize="14">
+                                        <Run Text="{Binding ProductName}" FontWeight="SemiBold"/>
+                                        <Run Text=" x"/>
+                                        <Run Text="{Binding Quantity}"/>
+                                    </TextBlock>
+                                    
+                                    <TextBlock Grid.Column="2" 
+                                               Text="{Binding LineTotal, StringFormat='{}{0:N2} ₺'}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               Foreground="#388E3C"/>
+                                </Grid>
+                                
+                                <!-- Alt satır: Ekleyen -->
+                                <TextBlock Text="{Binding AddedBy, StringFormat='Ekleyen: {0}'}"
+                                           FontSize="11"
+                                           Foreground="#666"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <!-- Özet -->
+        <Border Grid.Row="2" 
+                Background="#E3F2FD"
+                Padding="15"
+                Margin="0,20,0,0"
+                CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding TotalItemsText}" FontSize="13"/>
+                </StackPanel>
+                
+                <TextBlock Grid.Column="1"
+                           Text="{Binding TotalAmountText}"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#1976D2"/>
+            </Grid>
+        </Border>
+        
+        <!-- Kapat Butonu -->
+        <Button Grid.Row="3"
+                Content="Kapat"
+                Command="{Binding CloseCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Width="120"
+                Margin="0,15,0,0"
+                HorizontalAlignment="Center"/>
+    </Grid>
+</Window>

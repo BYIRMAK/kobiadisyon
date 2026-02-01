@@ -156,6 +156,9 @@ namespace KobiPOS.Services
                     Key TEXT PRIMARY KEY,
                     Value TEXT NOT NULL
                 );
+                
+                -- Index for OrderDetails AddedTime for better query performance
+                CREATE INDEX IF NOT EXISTS idx_orderdetails_addedtime ON OrderDetails(AddedTime);
             ";
 
             using var command = new SqliteCommand(createTables, connection);
@@ -231,6 +234,42 @@ namespace KobiPOS.Services
             if (!hasProductIsActive)
             {
                 new SqliteCommand("ALTER TABLE Products ADD COLUMN IsActive INTEGER DEFAULT 1", connection).ExecuteNonQuery();
+            }
+
+            // Check if new columns exist in OrderDetails for time tracking
+            var checkOrderDetails = new SqliteCommand("PRAGMA table_info(OrderDetails)", connection);
+            bool hasAddedTime = false;
+            bool hasAddedBy = false;
+            using (var reader = checkOrderDetails.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var columnName = reader.GetString(1);
+                    if (columnName == "AddedTime") hasAddedTime = true;
+                    if (columnName == "AddedBy") hasAddedBy = true;
+                }
+            }
+
+            if (!hasAddedTime)
+            {
+                new SqliteCommand("ALTER TABLE OrderDetails ADD COLUMN AddedTime TEXT", connection).ExecuteNonQuery();
+                
+                // Mevcut kayıtlar için varsayılan değer ata (Order.OrderDate kullan)
+                new SqliteCommand(@"
+                    UPDATE OrderDetails 
+                    SET AddedTime = (SELECT OrderDate FROM Orders WHERE Orders.ID = OrderDetails.OrderID)
+                    WHERE AddedTime IS NULL", connection).ExecuteNonQuery();
+            }
+            
+            if (!hasAddedBy)
+            {
+                new SqliteCommand("ALTER TABLE OrderDetails ADD COLUMN AddedBy TEXT", connection).ExecuteNonQuery();
+                
+                // Mevcut kayıtlar için varsayılan değer ata (Order.UserID'den kullanıcı adını al)
+                new SqliteCommand(@"
+                    UPDATE OrderDetails 
+                    SET AddedBy = (SELECT FullName FROM Users WHERE Users.ID = (SELECT UserID FROM Orders WHERE Orders.ID = OrderDetails.OrderID))
+                    WHERE AddedBy IS NULL OR AddedBy = ''", connection).ExecuteNonQuery();
             }
         }
 
@@ -426,6 +465,32 @@ namespace KobiPOS.Services
             }
 
             return tables;
+        }
+
+        public Table? GetTableById(int tableId)
+        {
+            using var connection = GetConnection();
+            connection.Open();
+
+            var command = new SqliteCommand("SELECT ID, TableNumber, TableName, Status, Capacity, ZoneID, IsActive FROM Tables WHERE ID = @tableId", connection);
+            command.Parameters.AddWithValue("@tableId", tableId);
+            using var reader = command.ExecuteReader();
+
+            if (reader.Read())
+            {
+                return new Table
+                {
+                    ID = reader.GetInt32(0),
+                    TableNumber = reader.GetInt32(1),
+                    TableName = reader.GetString(2),
+                    Status = reader.GetString(3),
+                    Capacity = reader.GetInt32(4),
+                    ZoneID = reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                    IsActive = reader.IsDBNull(6) ? true : reader.GetInt32(6) == 1
+                };
+            }
+
+            return null;
         }
 
         public List<Table> GetTablesByZone(int zoneId)
@@ -649,8 +714,8 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(@"
-                INSERT INTO OrderDetails (OrderID, ProductID, ProductName, Quantity, UnitPrice, LineTotal, Notes)
-                VALUES (@orderId, @productId, @productName, @quantity, @unitPrice, @lineTotal, @notes)
+                INSERT INTO OrderDetails (OrderID, ProductID, ProductName, Quantity, UnitPrice, LineTotal, Notes, AddedTime, AddedBy)
+                VALUES (@orderId, @productId, @productName, @quantity, @unitPrice, @lineTotal, @notes, @addedTime, @addedBy)
             ", connection);
 
             command.Parameters.AddWithValue("@orderId", detail.OrderID);
@@ -660,6 +725,8 @@ namespace KobiPOS.Services
             command.Parameters.AddWithValue("@unitPrice", detail.UnitPrice);
             command.Parameters.AddWithValue("@lineTotal", detail.LineTotal);
             command.Parameters.AddWithValue("@notes", detail.Notes ?? string.Empty);
+            command.Parameters.AddWithValue("@addedTime", detail.AddedTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@addedBy", detail.AddedBy ?? string.Empty);
 
             command.ExecuteNonQuery();
         }
@@ -705,7 +772,7 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(
-                "SELECT * FROM OrderDetails WHERE OrderID = @orderId",
+                "SELECT ID, OrderID, ProductID, ProductName, Quantity, UnitPrice, LineTotal, Notes, AddedTime, AddedBy FROM OrderDetails WHERE OrderID = @orderId ORDER BY AddedTime",
                 connection);
             command.Parameters.AddWithValue("@orderId", orderId);
 
@@ -721,7 +788,9 @@ namespace KobiPOS.Services
                     Quantity = reader.GetInt32(4),
                     UnitPrice = reader.GetDecimal(5),
                     LineTotal = reader.GetDecimal(6),
-                    Notes = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
+                    Notes = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                    AddedTime = reader.IsDBNull(8) ? DateTime.Now : DateTime.Parse(reader.GetString(8)),
+                    AddedBy = reader.IsDBNull(9) ? string.Empty : reader.GetString(9)
                 });
             }
 

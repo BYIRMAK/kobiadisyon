@@ -53,6 +53,15 @@ namespace KobiPOS.Models
             }
         }
 
+        // Yeni alanlar: Zaman takibi için
+        public DateTime AddedTime { get; set; } = DateTime.Now;
+        public string AddedBy { get; set; } = string.Empty;
+
+        // UI için computed properties
+        public string FormattedTime => AddedTime.ToString("HH:mm");
+        public string DetailedTime => AddedTime.ToString("HH:mm:ss");
+        public string TimeAndUser => $"{DetailedTime} - {AddedBy}";
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
