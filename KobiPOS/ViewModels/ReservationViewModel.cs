@@ -6,6 +6,7 @@ using System.Windows.Input;
 using KobiPOS.Helpers;
 using KobiPOS.Models;
 using KobiPOS.Services;
+using KobiPOS.Views.Dialogs;
 
 namespace KobiPOS.ViewModels
 {
@@ -61,16 +62,26 @@ namespace KobiPOS.ViewModels
         
         private void AddReservation()
         {
-            // TODO: AddReservationDialog açılacak
-            MessageBox.Show("Yeni Rezervasyon dialog'u ekleme özelliği yakında eklenecek!", 
-                "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+            var dialog = new AddReservationDialog(_currentUser);
+            var result = dialog.ShowDialog();
+            
+            if (result == true && dialog.Success)
+            {
+                LoadReservations();
+            }
         }
         
         private void EditReservation(Reservation? reservation)
         {
             if (reservation == null) return;
-            MessageBox.Show($"Rezervasyon düzenleme: {reservation.CustomerName}", 
-                "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+            
+            var dialog = new EditReservationDialog(reservation);
+            var result = dialog.ShowDialog();
+            
+            if (result == true && dialog.Success)
+            {
+                LoadReservations();
+            }
         }
         
         private void CancelReservation(Reservation? reservation)

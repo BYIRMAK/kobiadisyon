@@ -13,6 +13,9 @@ namespace KobiPOS.Models
         // YENİ: Rezervasyon bilgisi
         public Reservation? CurrentReservation { get; set; }
         
+        // ComboBox'larda gösterim için
+        public string DisplayName { get; set; } = string.Empty;
+        
         // Masa rengi (güncellenmiş - Rezerve durumu eklendi)
         public string StatusColor => Status switch
         {
