@@ -216,14 +216,8 @@ namespace KobiPOS.ViewModels
 
         private bool CanCompletePayment()
         {
-            if (string.IsNullOrEmpty(SelectedPaymentType))
-                return false;
-
-            // For cash payment, ensure cash received is at least the total amount
-            if (IsCashPayment && CashReceived < TotalAmount)
-                return false;
-
-            return true;
+            // Sadece ödeme türü seçilmişse yeterli
+            return !string.IsNullOrEmpty(SelectedPaymentType);
         }
 
         private void CompletePayment()
@@ -231,6 +225,18 @@ namespace KobiPOS.ViewModels
             if (!CanCompletePayment())
             {
                 MessageBox.Show("Lütfen ödeme bilgilerini kontrol edin.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Nakit için tutar kontrolü
+            if (IsCashPayment && CashReceived < TotalAmount)
+            {
+                MessageBox.Show(
+                    $"Alınan tutar yetersiz!\n\nToplam: {TotalAmount:N2} ₺\nAlınan: {CashReceived:N2} ₺",
+                    "Uyarı",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
                 return;
             }
 
