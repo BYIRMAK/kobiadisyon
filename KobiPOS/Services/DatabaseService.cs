@@ -156,6 +156,9 @@ namespace KobiPOS.Services
                     Key TEXT PRIMARY KEY,
                     Value TEXT NOT NULL
                 );
+                
+                -- Index for OrderDetails AddedTime for better query performance
+                CREATE INDEX IF NOT EXISTS idx_orderdetails_addedtime ON OrderDetails(AddedTime);
             ";
 
             using var command = new SqliteCommand(createTables, connection);

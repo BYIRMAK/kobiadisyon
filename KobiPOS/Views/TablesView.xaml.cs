@@ -13,7 +13,7 @@ namespace KobiPOS.Views
 
         private void TableCard_Click(object sender, MouseButtonEventArgs e)
         {
-            var border = sender as System.Windows.Controls.Border;
+            var border = sender as Border;
             var tableDisplayModel = border?.DataContext as TableDisplayModel;
             if (tableDisplayModel == null) return;
 
