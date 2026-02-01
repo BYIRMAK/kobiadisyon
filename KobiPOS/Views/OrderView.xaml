@@ -66,18 +66,8 @@
                                             Command="{Binding DataContext.SelectCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
                                             Margin="5,0"
-                                            Padding="15,8">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ID}" 
-                                                                 Value="{Binding DataContext.SelectedCategory.ID, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                                                        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
+                                            Padding="15,8"
+                                            Style="{StaticResource PrimaryButton}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
