@@ -73,7 +73,7 @@ namespace KobiPOS.Views.Dialogs
             }
             
             // Saat ComboBox seçimi
-            var timeString = _reservation.ReservationTime.ToString(@"hh\:mm");
+            var timeString = _reservation.ReservationTime.ToString(@"HH\:mm");
             foreach (ComboBoxItem item in ReservationTimeComboBox.Items)
             {
                 if (item.Content.ToString() == timeString)
