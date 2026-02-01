@@ -39,135 +39,108 @@
 
         <!-- Main Content -->
         <Grid Grid.Row="1" Margin="20">
-            <DataGrid x:Name="ProductsDataGrid"
-                      ItemsSource="{Binding Products}"
-                      SelectedItem="{Binding SelectedProduct}"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      IsReadOnly="True"
-                      SelectionMode="Single"
-                      GridLinesVisibility="Horizontal"
-                      HeadersVisibility="Column"
-                      RowHeight="50"
-                      FontSize="14"
-                      Background="White"
-                      BorderBrush="#E0E0E0"
-                      BorderThickness="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Category Filters -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                <ItemsControl ItemsSource="{Binding Categories}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding CategoryName}"
+                                    Command="{Binding DataContext.FilterCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource CategoryFilterButton}"
+                                    Margin="5,0"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Ürün Adı" 
-                                        Binding="{Binding ProductName}" 
-                                        Width="2*" 
-                                        MinWidth="150">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="Padding" Value="10,0"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-
-                    <DataGridTextColumn Header="Fiyat" 
-                                        Binding="{Binding Price, StringFormat='{}{0:C2}'}" 
-                                        Width="*"
-                                        MinWidth="100">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="Padding" Value="10,0"/>
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-
-                    <DataGridTextColumn Header="Birim" 
-                                        Binding="{Binding Unit}" 
-                                        Width="*"
-                                        MinWidth="80">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="Padding" Value="10,0"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-
-                    <DataGridTemplateColumn Header="Durum" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock HorizontalAlignment="Center" 
-                                           VerticalAlignment="Center"
-                                           FontWeight="SemiBold">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="Pasif"/>
-                                            <Setter Property="Foreground" Value="#F44336"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                    <Setter Property="Text" Value="Aktif"/>
-                                                    <Setter Property="Foreground" Value="#4CAF50"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <DataGridTemplateColumn Header="İşlemler" Width="200">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" 
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                    <Button Content="Düzenle" 
-                                            Style="{StaticResource PrimaryButton}"
-                                            Command="{Binding DataContext.EditProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            Margin="5,0"
-                                            Padding="15,8"
-                                            FontSize="12"/>
-                                    <Button Content="Sil" 
-                                            Style="{StaticResource DangerButton}"
-                                            Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            Margin="5,0"
-                                            Padding="15,8"
-                                            FontSize="12"/>
+            <!-- Product Grid (Card View) -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FilteredProducts}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="220" Height="320" 
+                                    Background="White" 
+                                    BorderBrush="#E0E0E0" 
+                                    BorderThickness="1" 
+                                    CornerRadius="8" 
+                                    Margin="10"
+                                    Padding="15"
+                                    Effect="{StaticResource CardShadow}">
+                                <StackPanel>
+                                    <!-- Product Image -->
+                                    <Border Width="180" Height="180" 
+                                            Background="#F5F5F5" 
+                                            CornerRadius="4"
+                                            Margin="0,0,0,10">
+                                        <Image Source="{Binding ImagePath, Converter={StaticResource PathToImageSourceConverter}, TargetNullValue={StaticResource DefaultProductImage}, FallbackValue={StaticResource DefaultProductImage}}"
+                                               Stretch="UniformToFill"/>
+                                    </Border>
+                                    
+                                    <!-- Product Name -->
+                                    <TextBlock Text="{Binding ProductName}" 
+                                               FontSize="16" 
+                                               FontWeight="SemiBold" 
+                                               TextTrimming="CharacterEllipsis"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,5"/>
+                                    
+                                    <!-- Price -->
+                                    <TextBlock Text="{Binding Price, StringFormat='{}{0:C2}'}" 
+                                               FontSize="18" 
+                                               FontWeight="Bold" 
+                                               Foreground="{StaticResource PrimaryBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,5"/>
+                                    
+                                    <!-- Stock Info -->
+                                    <TextBlock FontSize="12" 
+                                               Foreground="#666"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10">
+                                        <Run Text="Stok: "/>
+                                        <Run Text="{Binding CurrentStock, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    
+                                    <!-- Buttons -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="✏️ Düzenle" 
+                                                Command="{Binding DataContext.EditProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource WarningButton}"
+                                                FontSize="11"
+                                                Padding="8,4"
+                                                Margin="0,0,5,0"/>
+                                        
+                                        <Button Content="🗑️ Sil" 
+                                                Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource DangerButton}"
+                                                FontSize="11"
+                                                Padding="8,4"/>
+                                    </StackPanel>
                                 </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="#F5F5F5"/>
-                        <Setter Property="Foreground" Value="#333333"/>
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="14"/>
-                        <Setter Property="Padding" Value="10"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
-
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="White"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="#E3F2FD"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Grid>
 
         <!-- Edit Dialog -->

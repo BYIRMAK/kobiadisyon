@@ -11,6 +11,9 @@
         <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         
+        <!-- Default Product Image -->
+        <BitmapImage x:Key="DefaultProductImage" UriSource="pack://application:,,,/Images/no-product-image.png"/>
+        
         <!-- Colors -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#FF9800"/>
@@ -66,6 +69,40 @@
         <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
             <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        </Style>
+
+        <!-- Category Filter Button Style -->
+        <Style x:Key="CategoryFilterButton" TargetType="Button">
+            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="Foreground" Value="#1976D2"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#BBDEFB"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Background" Value="#1976D2"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <!-- TextBox Style -->
