@@ -89,6 +89,9 @@ namespace KobiPOS.ViewModels
         public event EventHandler? CheckoutRequested;
         public event EventHandler? BackRequested;
 
+        public Order? CurrentOrder => _currentOrder;
+        public List<OrderItem> CurrentOrderItems => OrderItems.ToList();
+
         public OrderViewModel(User currentUser, Table table)
         {
             _currentUser = currentUser;

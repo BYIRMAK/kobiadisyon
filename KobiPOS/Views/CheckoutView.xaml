@@ -1,0 +1,334 @@
+<UserControl x:Class="KobiPOS.Views.CheckoutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" 
+                Padding="20" Margin="0,0,0,10">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="Hesap Kapatma" 
+                               FontSize="24" 
+                               FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Table.TableName, StringFormat='Masa: {0}'}" 
+                               FontSize="14"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+                
+                <Button Content="← Geri" 
+                        Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Command="{Binding BackCommand}"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,0,10">
+                <!-- Order Summary -->
+                <Border Background="{StaticResource SurfaceBrush}" 
+                        CornerRadius="8" Padding="20" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Sipariş Özeti" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,15"/>
+
+                        <!-- Order Items -->
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="{Binding Quantity, StringFormat='{}{0}x'}" 
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,10,0"/>
+                                        
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding ProductName}" 
+                                                       FontSize="14"/>
+                                            <TextBlock Text="{Binding Notes}" 
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       Margin="0,2,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Notes}" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        
+                                        <TextBlock Grid.Column="2" 
+                                                   Text="{Binding LineTotal, StringFormat='{}{0:N2} ₺'}" 
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Totals Summary -->
+                        <Border BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" 
+                                Padding="0,15,0,0" Margin="0,15,0,0">
+                            <StackPanel>
+                                <Grid Margin="0,3">
+                                    <TextBlock Text="Ara Toplam:" FontSize="14"/>
+                                    <TextBlock Text="{Binding SubTotal, StringFormat='{}{0:N2} ₺'}" 
+                                               FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid Margin="0,3">
+                                    <TextBlock Text="KDV (%20):" FontSize="14"/>
+                                    <TextBlock Text="{Binding TaxAmount, StringFormat='{}{0:N2} ₺'}" 
+                                               FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Discount Section -->
+                <Border Background="{StaticResource SurfaceBrush}" 
+                        CornerRadius="8" Padding="20" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="İndirim" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,15"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Percent Discount -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="İndirim Yüzdesi (%)" 
+                                           FontSize="14" 
+                                           Margin="0,0,0,5"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" 
+                                             Text="{Binding DiscountPercent, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="35"
+                                             VerticalContentAlignment="Center"
+                                             Margin="0,0,5,0"/>
+                                    <Button Grid.Column="1" 
+                                            Content="Uygula" 
+                                            Style="{StaticResource WarningButton}"
+                                            Height="35"
+                                            Padding="15,0"
+                                            Command="{Binding ApplyPercentDiscountCommand}"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Amount Discount -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="İndirim Tutarı (₺)" 
+                                           FontSize="14" 
+                                           Margin="0,0,0,5"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" 
+                                             Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="35"
+                                             VerticalContentAlignment="Center"
+                                             Margin="0,0,5,0"/>
+                                    <Button Grid.Column="1" 
+                                            Content="Uygula" 
+                                            Style="{StaticResource WarningButton}"
+                                            Height="35"
+                                            Padding="15,0"
+                                            Command="{Binding ApplyAmountDiscountCommand}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Payment Type Selection -->
+                <Border Background="{StaticResource SurfaceBrush}" 
+                        CornerRadius="8" Padding="20" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Ödeme Türü" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,15"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" 
+                                    Content="🟢 Nakit" 
+                                    Height="60"
+                                    FontSize="16"
+                                    Margin="0,0,5,0"
+                                    Command="{Binding SelectPaymentTypeCommand}"
+                                    CommandParameter="Nakit">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SuccessButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPaymentType}" Value="Nakit">
+                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                <Setter Property="BorderThickness" Value="3"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Grid.Column="1" 
+                                    Content="🟡 Kredi Kartı" 
+                                    Height="60"
+                                    FontSize="16"
+                                    Margin="5,0"
+                                    Command="{Binding SelectPaymentTypeCommand}"
+                                    CommandParameter="Kredi Kartı">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource WarningButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPaymentType}" Value="Kredi Kartı">
+                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                <Setter Property="BorderThickness" Value="3"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Grid.Column="2" 
+                                    Content="🔵 Yemek Kartı" 
+                                    Height="60"
+                                    FontSize="16"
+                                    Margin="5,0,0,0"
+                                    Command="{Binding SelectPaymentTypeCommand}"
+                                    CommandParameter="Yemek Kartı">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPaymentType}" Value="Yemek Kartı">
+                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                <Setter Property="BorderThickness" Value="3"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+
+                        <!-- Cash Payment Details -->
+                        <StackPanel Margin="0,15,0,0">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCashPayment}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <TextBlock Text="Alınan Tutar (₺)" 
+                                       FontSize="14" 
+                                       Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding CashReceived, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="40"
+                                     FontSize="18"
+                                     VerticalContentAlignment="Center"/>
+
+                            <Grid Margin="0,10,0,0">
+                                <TextBlock Text="Para Üstü:" 
+                                           FontSize="16" 
+                                           FontWeight="Bold"/>
+                                <TextBlock Text="{Binding ChangeAmount, StringFormat='{}{0:N2} ₺'}" 
+                                           FontSize="16" 
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource SuccessBrush}"
+                                           HorizontalAlignment="Right"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Total Amount Display -->
+                <Border Background="{StaticResource PrimaryBrush}" 
+                        CornerRadius="8" Padding="20">
+                    <Grid>
+                        <TextBlock Text="ÖDENECEK TUTAR" 
+                                   FontSize="20" 
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding TotalAmount, StringFormat='{}{0:N2} ₺'}" 
+                                   FontSize="32" 
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" 
+                    Content="🖨️ Adisyon Yazdır" 
+                    Style="{StaticResource PrimaryButton}"
+                    Height="60"
+                    FontSize="16"
+                    Margin="0,0,5,0"
+                    Command="{Binding PrintReceiptCommand}"/>
+
+            <Button Grid.Column="1" 
+                    Content="✓ Ödemeyi Tamamla" 
+                    Style="{StaticResource SuccessButton}"
+                    Height="60"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Margin="5,0,0,0"
+                    Command="{Binding CompletePaymentCommand}"/>
+        </Grid>
+    </Grid>
+</UserControl>
