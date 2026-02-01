@@ -92,8 +92,12 @@ namespace KobiPOS.ViewModels
                     {
                         CashReceived = TotalAmount;
                         
-                        // Nakit seçildiğinde direkt ödemeyi tamamla
-                        CompletePayment();
+                        // UI'ın güncellenmesi için Dispatcher kullan
+                        // Bu sayede CashReceived UI'da güncellendikten SONRA CompletePayment çağrılır
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                            new Action(() => CompletePayment()),
+                            System.Windows.Threading.DispatcherPriority.Background
+                        );
                         return;
                     }
                     
