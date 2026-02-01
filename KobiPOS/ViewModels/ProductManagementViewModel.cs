@@ -293,10 +293,30 @@ namespace KobiPOS.ViewModels
             if (MessageBox.Show("Ürün görselini kaldırmak istediğinize emin misiniz?",
                 "Onay", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                EditingProduct.ImagePath = string.Empty;
-                OnPropertyChanged(nameof(EditingProduct));
-                MessageBox.Show("Resim kaldırıldı!", "Başarılı", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    // Delete physical file if it exists
+                    // Only delete files for saved products (ID > 0), not temporary files used during product creation
+                    if (EditingProduct.ID > 0 && !string.IsNullOrEmpty(EditingProduct.ImagePath))
+                    {
+                        string fullPath = Helpers.PathToImageSourceConverter.ConvertToAbsolutePath(EditingProduct.ImagePath);
+                        
+                        if (File.Exists(fullPath))
+                        {
+                            File.Delete(fullPath);
+                        }
+                    }
+                    
+                    EditingProduct.ImagePath = string.Empty;
+                    OnPropertyChanged(nameof(EditingProduct));
+                    MessageBox.Show("Resim kaldırıldı!", "Başarılı", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Resim kaldırılırken hata oluştu: {ex.Message}", "Hata",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
