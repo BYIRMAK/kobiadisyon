@@ -111,10 +111,17 @@
                                 Width="180" 
                                 Height="200" 
                                 CornerRadius="8"
-                                Cursor="Hand">
+                                Cursor="Hand"
+                                MouseLeftButtonDown="TableCard_Click">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect ShadowDepth="2" BlurRadius="5" Opacity="0.3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Table.Status}" Value="Dolu">
                                             <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
@@ -122,6 +129,18 @@
                                         <DataTrigger Binding="{Binding Table.Status}" Value="Rezerve">
                                             <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
                                         </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect ShadowDepth="4" BlurRadius="10" Opacity="0.6"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1.05" ScaleY="1.05"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
@@ -162,24 +181,7 @@
                                                FontSize="12"
                                                Foreground="White"
                                                Opacity="0.9"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,0,0,15"/>
-
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <Button Content="Aç" 
-                                                Style="{StaticResource SuccessButton}"
-                                                Margin="5,0"
-                                                Padding="15,8"
-                                                Command="{Binding DataContext.OpenTableCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"/>
-                                        
-                                        <Button Content="Kapat" 
-                                                Style="{StaticResource DangerButton}"
-                                                Margin="5,0"
-                                                Padding="15,8"
-                                                Command="{Binding DataContext.CloseTableCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"/>
-                                    </StackPanel>
+                                               HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
