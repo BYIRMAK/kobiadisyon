@@ -115,17 +115,30 @@ namespace KobiPOS.Views.Dialogs
             
             try
             {
-                // Saat
-                var selectedTimeItem = ReservationTimeComboBox.SelectedItem as ComboBoxItem;
-                var timeString = selectedTimeItem?.Tag?.ToString() ?? "19:00:00";
+                // SAAT PARSE (GÜVENLİ)
+                string timeString = "19:00:00";
+                if (ReservationTimeComboBox.SelectedItem is ComboBoxItem selectedTimeItem)
+                {
+                    timeString = selectedTimeItem.Tag?.ToString() ?? "19:00:00";
+                }
                 
-                // Kişi sayısı
-                var selectedGuestItem = GuestCountComboBox.SelectedItem as ComboBoxItem;
-                var guestCount = int.Parse(selectedGuestItem?.Content?.ToString() ?? "4");
+                // KİŞİ SAYISI PARSE (GÜVENLİ)
+                int guestCount = 4;
+                if (GuestCountComboBox.SelectedItem is ComboBoxItem selectedGuestItem)
+                {
+                    var contentStr = selectedGuestItem.Content?.ToString();
+                    if (!string.IsNullOrWhiteSpace(contentStr) && int.TryParse(contentStr, out int parsedCount))
+                    {
+                        guestCount = parsedCount;
+                    }
+                }
                 
-                // Durum
-                var selectedStatusItem = StatusComboBox.SelectedItem as ComboBoxItem;
-                var status = selectedStatusItem?.Tag?.ToString() ?? "Confirmed";
+                // DURUM PARSE (GÜVENLİ)
+                string status = "Confirmed";
+                if (StatusComboBox.SelectedItem is ComboBoxItem selectedStatusItem)
+                {
+                    status = selectedStatusItem.Tag?.ToString() ?? "Confirmed";
+                }
                 
                 _reservation.CustomerName = CustomerName.Trim();
                 _reservation.CustomerPhone = CustomerPhone.Trim();
@@ -148,7 +161,7 @@ namespace KobiPOS.Views.Dialogs
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Rezervasyon güncellenirken hata: {ex.Message}", "Hata", 
+                MessageBox.Show($"Rezervasyon güncellenirken hata:\n\n{ex.Message}\n\nDetay: {ex.StackTrace}", "Hata", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
