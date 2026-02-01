@@ -198,7 +198,7 @@ namespace KobiPOS.ViewModels
 
         private void CalculateChange()
         {
-            if (IsCashPayment && CashReceived > TotalAmount)
+            if (IsCashPayment && CashReceived >= TotalAmount)
             {
                 ChangeAmount = CashReceived - TotalAmount;
             }
