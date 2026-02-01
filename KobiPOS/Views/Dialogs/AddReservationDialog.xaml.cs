@@ -76,6 +76,7 @@ namespace KobiPOS.Views.Dialogs
             {
                 MessageBox.Show("Lütfen masa seçin!", "Uyarı", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
+                TableComboBox.Focus();
                 return;
             }
             
@@ -83,19 +84,35 @@ namespace KobiPOS.Views.Dialogs
             {
                 MessageBox.Show("Geçmiş tarih için rezervasyon oluşturamazsınız!", "Uyarı", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
+                ReservationDatePicker.Focus();
                 return;
             }
             
             try
             {
-                // Saat ComboBox'ından seçili değeri al
+                // SAAT PARSE - GÜVENLİ YOL
+                string timeString = "19:00:00"; // Default saat
+                
                 var selectedTimeItem = ReservationTimeComboBox.SelectedItem as ComboBoxItem;
-                var timeString = selectedTimeItem?.Tag?.ToString() ?? "19:00:00";
+                if (selectedTimeItem != null && selectedTimeItem.Tag != null)
+                {
+                    timeString = selectedTimeItem.Tag.ToString();
+                }
                 
-                // Kişi sayısı ComboBox'ından seçili değeri al
+                // KİŞİ SAYISI PARSE - GÜVENLİ YOL
+                int guestCount = 4; // Default kişi sayısı
+                
                 var selectedGuestItem = GuestCountComboBox.SelectedItem as ComboBoxItem;
-                var guestCount = int.Parse(selectedGuestItem?.Content?.ToString() ?? "4");
+                if (selectedGuestItem != null && selectedGuestItem.Content != null)
+                {
+                    string contentValue = selectedGuestItem.Content.ToString();
+                    if (int.TryParse(contentValue, out int parsed))
+                    {
+                        guestCount = parsed;
+                    }
+                }
                 
+                // REZERVASYON NESNESİ OLUŞTUR
                 var reservation = new Reservation
                 {
                     CustomerName = CustomerName.Trim(),
@@ -110,19 +127,35 @@ namespace KobiPOS.Views.Dialogs
                     CreatedBy = _currentUser.ID
                 };
                 
-                _databaseService.AddReservation(reservation);
+                // VERİTABANINA KAYDET
+                int newId = _databaseService.AddReservation(reservation);
                 
                 Success = true;
-                MessageBox.Show("Rezervasyon başarıyla oluşturuldu!", "Başarılı", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                MessageBox.Show(
+                    $"Rezervasyon başarıyla oluşturuldu!\n\nMüşteri: {reservation.CustomerName}\nTarih: {reservation.FormattedDate}\nSaat: {reservation.FormattedTime}\nMasa: {SelectedTable.TableName}", 
+                    "Başarılı", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Information);
                 
                 DialogResult = true;
                 Close();
             }
+            catch (FormatException ex)
+            {
+                MessageBox.Show(
+                    $"Veri formatı hatası!\n\nLütfen tüm alanları doğru doldurduğunuzdan emin olun.\n\nDetay: {ex.Message}", 
+                    "Format Hatası", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Rezervasyon oluşturulurken hata: {ex.Message}", "Hata", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"Rezervasyon oluşturulurken beklenmeyen bir hata oluştu!\n\nHata: {ex.Message}\n\nİç Hata: {ex.InnerException?.Message}", 
+                    "Hata", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
         }
         
