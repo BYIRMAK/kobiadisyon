@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace KobiPOS.Models
@@ -25,7 +24,6 @@ namespace KobiPOS.Models
                     _imagePath = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(HasImage));
-                    OnPropertyChanged(nameof(ImageSource));
                 }
             }
         }
@@ -37,37 +35,6 @@ namespace KobiPOS.Models
         public bool IsActive { get; set; } = true;
         
         public bool HasImage => !string.IsNullOrEmpty(ImagePath);
-        
-        /// <summary>
-        /// Returns the absolute path for the image to be used in WPF bindings
-        /// </summary>
-        public string? ImageSource
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(ImagePath))
-                {
-                    return null;
-                }
-                
-                try
-                {
-                    // Use the existing converter's logic to get absolute path
-                    string fullPath = Helpers.PathToImageSourceConverter.ConvertToAbsolutePath(ImagePath);
-                    
-                    if (File.Exists(fullPath))
-                    {
-                        return fullPath;
-                    }
-                }
-                catch
-                {
-                    // If there's any error, return null
-                }
-                
-                return null;
-            }
-        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
