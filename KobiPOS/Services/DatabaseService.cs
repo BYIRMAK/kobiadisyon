@@ -156,9 +156,6 @@ namespace KobiPOS.Services
                     Key TEXT PRIMARY KEY,
                     Value TEXT NOT NULL
                 );
-                
-                -- Index for OrderDetails AddedTime for better query performance
-                CREATE INDEX IF NOT EXISTS idx_orderdetails_addedtime ON OrderDetails(AddedTime);
             ";
 
             using var command = new SqliteCommand(createTables, connection);
@@ -260,6 +257,9 @@ namespace KobiPOS.Services
                     SET AddedTime = (SELECT OrderDate FROM Orders WHERE Orders.ID = OrderDetails.OrderID)
                     WHERE AddedTime IS NULL", connection).ExecuteNonQuery();
             }
+            
+            // Create index for OrderDetails AddedTime for better query performance (after column exists)
+            new SqliteCommand("CREATE INDEX IF NOT EXISTS idx_orderdetails_addedtime ON OrderDetails(AddedTime)", connection).ExecuteNonQuery();
             
             if (!hasAddedBy)
             {
