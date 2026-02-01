@@ -295,11 +295,11 @@ namespace KobiPOS.ViewModels
             {
                 try
                 {
-                    // Delete physical file if it exists (but only for saved products, not temp files)
+                    // Delete physical file if it exists
+                    // Only delete files for saved products (ID > 0), not temporary files used during product creation
                     if (EditingProduct.ID > 0 && !string.IsNullOrEmpty(EditingProduct.ImagePath))
                     {
-                        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                        string fullPath = Path.Combine(baseDirectory, EditingProduct.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                        string fullPath = Helpers.PathToImageSourceConverter.ConvertToAbsolutePath(EditingProduct.ImagePath);
                         
                         if (File.Exists(fullPath))
                         {

@@ -15,8 +15,7 @@ namespace KobiPOS.Helpers
                 try
                 {
                     // Convert relative path to absolute path
-                    string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                    string fullPath = Path.Combine(baseDirectory, imagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    string fullPath = ConvertToAbsolutePath(imagePath);
                     
                     if (File.Exists(fullPath))
                     {
@@ -30,9 +29,11 @@ namespace KobiPOS.Helpers
                         return bitmap;
                     }
                 }
-                catch
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is NotSupportedException)
                 {
-                    // If there's an error loading the image, return null
+                    // If there's an error loading the image (file locked, permission denied, or invalid format), return null
+                    // This will cause the image control to not display anything
+                    System.Diagnostics.Debug.WriteLine($"Failed to load image from {imagePath}: {ex.Message}");
                     return null;
                 }
             }
@@ -43,6 +44,15 @@ namespace KobiPOS.Helpers
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+        
+        /// <summary>
+        /// Converts a relative image path (e.g., /Images/Products/1.jpg) to an absolute file system path
+        /// </summary>
+        public static string ConvertToAbsolutePath(string relativePath)
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            return Path.Combine(baseDirectory, relativePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
         }
     }
 }
