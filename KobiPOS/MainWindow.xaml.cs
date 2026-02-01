@@ -79,8 +79,27 @@ public partial class MainWindow : Window
     private void ShowTables()
     {
         var tablesView = new TablesView();
-        tablesView.DataContext = new TablesViewModel(_viewModel.CurrentUser);
+        var tablesViewModel = new TablesViewModel(_viewModel.CurrentUser);
+        tablesViewModel.TableSelected += OnTableSelected;
+        tablesView.DataContext = tablesViewModel;
         ContentArea.Content = tablesView;
+    }
+
+    private void OnTableSelected(object? sender, Table table)
+    {
+        var orderView = new OrderView();
+        var orderViewModel = new OrderViewModel(_viewModel.CurrentUser, table);
+        orderViewModel.BackRequested += (s, e) => ShowTables();
+        orderViewModel.OrderSaved += (s, e) => ShowTables();
+        orderViewModel.CheckoutRequested += (s, e) => ShowCheckout(orderViewModel);
+        orderView.DataContext = orderViewModel;
+        ContentArea.Content = orderView;
+    }
+
+    private void ShowCheckout(OrderViewModel orderViewModel)
+    {
+        // This will be implemented when we create CheckoutView
+        MessageBox.Show("Checkout view will be implemented next.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void ShowProducts()
