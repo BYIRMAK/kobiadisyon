@@ -253,7 +253,7 @@ namespace KobiPOS.ViewModels
                         SubTotal = SubTotal,
                         TaxAmount = TaxAmount,
                         TotalAmount = TotalAmount,
-                        Status = "Bekliyor"
+                        Status = OrderStatus.Pending
                     };
                     _currentOrder.ID = _db.CreateOrder(_currentOrder);
                 }
@@ -284,7 +284,7 @@ namespace KobiPOS.ViewModels
                 }
 
                 // Update table status
-                _db.UpdateTableStatus(_table.ID, "Dolu");
+                _db.UpdateTableStatus(_table.ID, TableStatus.Occupied);
 
                 MessageBox.Show("Sipariş kaydedildi.", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
                 OrderSaved?.Invoke(this, EventArgs.Empty);
@@ -303,11 +303,18 @@ namespace KobiPOS.ViewModels
                 return;
             }
 
-            // First save the order
-            ExecuteSaveOrder();
-            
-            // Then navigate to checkout
-            CheckoutRequested?.Invoke(this, EventArgs.Empty);
+            // First save the order - if save is successful, then navigate to checkout
+            try
+            {
+                ExecuteSaveOrder();
+                // Only proceed to checkout if save was successful (no exception thrown)
+                CheckoutRequested?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                // Save failed, don't navigate to checkout
+                MessageBox.Show($"Sipariş kaydedilemedi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

@@ -62,7 +62,7 @@ namespace KobiPOS.ViewModels
 
         private bool CanExecuteCloseTable(object? parameter)
         {
-            return parameter is TableDisplayModel model && model.Table.Status == "Dolu";
+            return parameter is TableDisplayModel model && model.Table.Status == TableStatus.Occupied;
         }
 
         private void ExecuteOpenTable(object? parameter)
@@ -85,7 +85,7 @@ namespace KobiPOS.ViewModels
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    _db.UpdateTableStatus(model.Table.ID, "Boş");
+                    _db.UpdateTableStatus(model.Table.ID, TableStatus.Empty);
                     LoadTables();
                     MessageBox.Show($"{model.Table.TableName} kapatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                 }

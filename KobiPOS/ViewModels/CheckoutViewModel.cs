@@ -25,6 +25,8 @@ namespace KobiPOS.ViewModels
         private decimal _cashReceived;
         private decimal _changeAmount;
 
+        private decimal GrossTotal => SubTotal + TaxAmount;
+
         public Table Table => _table;
         public User CurrentUser => _currentUser;
 
@@ -106,7 +108,7 @@ namespace KobiPOS.ViewModels
             set => SetProperty(ref _changeAmount, value);
         }
 
-        public bool IsCashPayment => SelectedPaymentType == "Nakit";
+        public bool IsCashPayment => SelectedPaymentType == PaymentType.Cash;
 
         public ICommand ApplyPercentDiscountCommand { get; }
         public ICommand ApplyAmountDiscountCommand { get; }
@@ -128,7 +130,7 @@ namespace KobiPOS.ViewModels
             _db = DatabaseService.Instance;
 
             _items = new ObservableCollection<OrderItem>(orderItems);
-            _selectedPaymentType = "Nakit";
+            _selectedPaymentType = PaymentType.Cash;
 
             SubTotal = order.SubTotal;
             TaxAmount = order.TaxAmount;
@@ -138,7 +140,7 @@ namespace KobiPOS.ViewModels
 
             ApplyPercentDiscountCommand = new RelayCommand(_ => ApplyPercentDiscount());
             ApplyAmountDiscountCommand = new RelayCommand(_ => ApplyAmountDiscount());
-            SelectPaymentTypeCommand = new RelayCommand(param => SelectedPaymentType = param?.ToString() ?? "Nakit");
+            SelectPaymentTypeCommand = new RelayCommand(param => SelectedPaymentType = param?.ToString() ?? PaymentType.Cash);
             CompletePaymentCommand = new RelayCommand(_ => CompletePayment(), _ => CanCompletePayment());
             PrintReceiptCommand = new RelayCommand(_ => PrintReceipt());
             BackCommand = new RelayCommand(_ => BackRequested?.Invoke(this, EventArgs.Empty));
@@ -148,8 +150,7 @@ namespace KobiPOS.ViewModels
         {
             if (DiscountPercent >= 0 && DiscountPercent <= 100)
             {
-                var grossTotal = SubTotal + TaxAmount;
-                DiscountAmount = grossTotal * (DiscountPercent / 100);
+                DiscountAmount = GrossTotal * (DiscountPercent / 100);
             }
             else
             {
@@ -159,28 +160,25 @@ namespace KobiPOS.ViewModels
 
         private void ApplyAmountDiscount()
         {
-            var grossTotal = SubTotal + TaxAmount;
-            if (DiscountAmount >= 0 && DiscountAmount <= grossTotal)
+            if (DiscountAmount >= 0 && DiscountAmount <= GrossTotal)
             {
-                DiscountPercent = grossTotal > 0 ? (DiscountAmount / grossTotal) * 100 : 0;
-                CalculateTotal();
+                DiscountPercent = GrossTotal > 0 ? (DiscountAmount / GrossTotal) * 100 : 0;
+                // Note: CalculateTotal is called automatically through DiscountAmount setter
             }
             else
             {
-                MessageBox.Show($"İndirim tutarı 0-{grossTotal:N2} ₺ arasında olmalıdır.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"İndirim tutarı 0-{GrossTotal:N2} ₺ arasında olmalıdır.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         private void CalculateDiscount()
         {
-            var grossTotal = SubTotal + TaxAmount;
-            DiscountAmount = grossTotal * (DiscountPercent / 100);
+            DiscountAmount = GrossTotal * (DiscountPercent / 100);
         }
 
         private void CalculateTotal()
         {
-            var grossTotal = SubTotal + TaxAmount;
-            TotalAmount = grossTotal - DiscountAmount;
+            TotalAmount = GrossTotal - DiscountAmount;
             CalculateChange();
         }
 
@@ -224,12 +222,12 @@ namespace KobiPOS.ViewModels
                 _order.DiscountPercent = DiscountPercent;
                 _order.TotalAmount = TotalAmount;
                 _order.PaymentType = SelectedPaymentType;
-                _order.Status = "Servis Edildi";
+                _order.Status = OrderStatus.Served;
 
                 _db.UpdateOrder(_order);
 
                 // Update table status to empty
-                _db.UpdateTableStatus(_table.ID, "Boş");
+                _db.UpdateTableStatus(_table.ID, TableStatus.Empty);
 
                 MessageBox.Show(
                     $"Ödeme tamamlandı!\n\nToplam: {TotalAmount:N2} ₺\nÖdeme Türü: {SelectedPaymentType}" +

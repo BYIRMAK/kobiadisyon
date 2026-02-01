@@ -465,7 +465,7 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(
-                "SELECT * FROM Orders WHERE TableID = @tableId AND Status != 'Servis Edildi' ORDER BY OrderDate DESC LIMIT 1",
+                $"SELECT * FROM Orders WHERE TableID = @tableId AND Status != '{OrderStatus.Served}' ORDER BY OrderDate DESC LIMIT 1",
                 connection);
             command.Parameters.AddWithValue("@tableId", tableId);
 
@@ -571,7 +571,7 @@ namespace KobiPOS.Services
             connection.Open();
 
             var command = new SqliteCommand(
-                "SELECT COALESCE(SUM(TotalAmount), 0) FROM Orders WHERE TableID = @tableId AND Status != 'Servis Edildi'",
+                $"SELECT COALESCE(SUM(TotalAmount), 0) FROM Orders WHERE TableID = @tableId AND Status != '{OrderStatus.Served}'",
                 connection);
             command.Parameters.AddWithValue("@tableId", tableId);
 
