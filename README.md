@@ -2,6 +2,8 @@
 
 Profesyonel bir cafe ve restoran yönetim sistemi masaüstü uygulaması.
 
+> 🛠️ **Sorun mu yaşıyorsunuz?** Format hatası alıyorsanız [Manuel Temizlik Rehberi](MANUEL_TEMIZLIK.md)'ni inceleyin.
+
 ## 📋 Özellikler
 
 - **Kullanıcı Yönetimi:** Admin, Kasiyer ve Garson rollerinde kullanıcı girişi
@@ -218,6 +220,22 @@ Veritabanını sıfırlamak için:
 - Veritabanı dosyasının çok büyük olup olmadığını kontrol edin
 - Eski kayıtları arşivleyin veya silin
 - Uygulamayı yeniden başlatın
+
+### "Input string was not in a correct format" Hatası
+
+Bu hata genellikle Visual Studio'nun eski DLL cache kullanmasından kaynaklanır.
+
+**ÇÖZÜM:** [Manuel Temizlik Rehberi](MANUEL_TEMIZLIK.md) - Adım adım temizlik talimatları
+
+**Hızlı Çözüm:**
+1. Visual Studio'yu kapat
+2. `bin`, `obj`, `.vs` klasörlerini sil
+3. Visual Studio'yu aç
+4. `Build` → `Clean Solution`
+5. `Build` → `Rebuild Solution`
+6. Uygulamayı yeniden çalıştır
+
+Detaylı adımlar ve debug talimatları için manuel temizlik rehberini inceleyin.
 
 ## 📱 İletişim ve Destek
 
