@@ -77,6 +77,9 @@ Sağ Üst → "Çıkış Yap" → Yeni Kullanıcı ile Giriş
 
 ## ❓ Sık Sorulan Sorular
 
+**S: "Input string was not in a correct format" hatası alıyorum**
+C: Bu Visual Studio cache sorunu olabilir. [Manuel Temizlik Rehberi](MANUEL_TEMIZLIK.md)'ni takip edin.
+
 **S: Şifremi unuttum, ne yapmalıyım?**
 C: Veritabanını sıfırlayın (`Database/kobipos.db` dosyasını silin) veya destek ile iletişime geçin.
 
